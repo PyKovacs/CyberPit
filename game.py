@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 from typing import List
 
-from classes import Weapons, RobotTypes
-
-weapons = Weapons()
-robot_types = RobotTypes()
+import base
 
 print('\nWELCOME TO THE CYBER PIT!')
-print('Choose your robot type:')
-print(robot_types.list_all())
+print('Robot types available:\n')
+print(base.RobotTypes.showcase())
 
-type = input('What will it be?  ').lower()
-while type not in robot_types.__dict__:
-    type = input('Choose from existing types listed above.  ').lower()
+type = None
+while type not in base.RobotTypes.all_type_names:
+    type = input('Choose your robot type:\n'+f'{base.RobotTypes.all_type_names}\n').upper() # TODO dorobit legendu
 
-print('Good choice.')
+name = str(input('Good choice! Now name your machine:\n'))
+while not name:
+    type = input('Name your robot:\n')
 
+print('{} the {} needs some weapons to fight.'.format(name, type))
