@@ -8,7 +8,7 @@ class Weapon:
     cost: int
     damage: int
     consumption: int
-    type: str
+    protocol: str
     special: List
     desc: str
 
@@ -23,83 +23,74 @@ class Weapon:
         # self.flipper = self.Weapon(20, 0, 10, 'force', ['ko']) # low chance but KO if success
 
 
-@dataclass
-class RobotBase:
-    name : str = ''
-    type : str = ''
-    health : int = 20
-    energy : int = 20
-    money : int = 20
-    dodge_chance : int = 10
-    miss_chance : int = 5
-    desc : str = ''
-
-    def __init__(self):
-        self.heavy = self.RobotType('Heavy', health=30, dodge_chance=5, desc='Heavy tank, has a low chance to dodge attacks.')
-        self.agile = self.RobotType('Agile', health=10, dodge_chance=20, desc='Light construction, good at dodging, but low on HP.')
-    
-    def list_all(self):
-        all = []
-        for type_obj in self.__dict__.values():
-            all.append(type_obj.showcase())
-        return "\n\n".join(all)
 
 
-class RobotTypes:
+
+class RobotProtocols:
+
+    @dataclass
+    class RobotBase:
+        name: str = ''
+        protocol: str = ''
+        health: int = 20
+        energy: int = 20
+        money: int = 20
+        dodge_chance: int = 10
+        miss_chance: int = 5
+        desc: str = ''
+
+    @dataclass
     class Heavy(RobotBase):
-        type: str = 'HEAVY'
-        health : int = 30
-        dodge_chance : int = 5
-        desc : str = 'Heavy tank, increased HP.'
+        protocol: str = 'HEAVY'
+        health: int = 30
+        dodge_chance: int = 5
+        desc: str = 'Heavy tank, increased HP.'
 
+    @dataclass
     class Light(RobotBase):
-        type: str = 'LIGHT'
-        health : int = 15
-        money : int = 25
-        dodge_chance : int = 20
-        desc : str = 'Light construction, good at dodging.'
+        protocol: str = 'LIGHT'
+        health: int = 15
+        money: int = 25
+        dodge_chance: int = 20
+        desc: str = 'Light construction, good at dodging.'
     
+    @dataclass
     class Rich(RobotBase):
-        type: str = 'RICH'
-        health : int = 15
-        energy : int = 15
-        money : int = 30
-        desc : str = 'Efficient build, more money for weapons.'
+        protocol: str = 'RICH'
+        health: int = 15
+        energy: int = 15
+        money: int = 30
+        desc: str = 'Efficient build, more money for weapons.'
 
+    @dataclass
     class Brute(RobotBase):
-        type: str = 'BRUTE'
-        health : int = 45
-        money : int = 15
-        dodge_chance : int = 5
-        miss_chance : int = 15
-        desc : str = 'Super strong materials, very high HP.'
+        protocol: str = 'BRUTE'
+        health: int = 45
+        money: int = 15
+        dodge_chance: int = 5
+        miss_chance: int = 15
+        desc: str = 'Super strong materials, very high HP.'
 
+    @dataclass
     class Duracell(RobotBase):
-        type: str = 'DURACELL'
-        health : int = 15
-        energy : int = 35
-        money : int = 30
+        protocol: str = 'DURACELL'
+        health: int = 15
+        energy: int = 35
+        money: int = 30
         miss_chance : int = 10
-        desc : str = 'Improved power supply, increased energy.'
+        desc: str = 'Improved power supply, increased energy.'
 
-    all_types= [subcls for subcls in RobotBase.__subclasses__()]
-    all_type_names= [type.type for type in all_types]
+    all_protocols= [subcls for subcls in RobotBase.__subclasses__()]
+    all_protocol_names= [protocol.protocol for protocol in all_protocols]
 
     @classmethod
     def showcase(cls):
         showcase = ''
-        for r_type in cls.all_types:
+        for r_protocol in cls.all_protocols:
             showcase += ('*** {} ***\n{}\n\nHealth: \t{}\nEnergy: \t{}\nMoney: \t\t{}\nDodge chance:  \t{}%\nMiss chance:  \t{}%\n\n'
-                        .format(r_type.type, r_type.desc, r_type.health, r_type.energy, r_type.money, r_type.dodge_chance, r_type.miss_chance))
+                        .format(r_protocol.protocol, r_protocol.desc, r_protocol.health, r_protocol.energy, r_protocol.money, r_protocol.dodge_chance, r_protocol.miss_chance))
         return showcase
-
     
-
-
-@dataclass
-class Robot:
-    name : str
-    hp : int
-    energy : int
-    weapons : List[object]
-    type : object
+    @classmethod
+    def get_protocolclass_from_protocolname(cls, protocolname):
+        return [protocolclass for protocolclass in cls.all_protocols if protocolclass.protocol == protocolname][0]

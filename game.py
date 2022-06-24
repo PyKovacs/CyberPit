@@ -4,15 +4,19 @@ from typing import List
 import base
 
 print('\nWELCOME TO THE CYBER PIT!')
-print('Robot types available:\n')
-print(base.RobotTypes.showcase())
+print('Robot protocols available:\n')
+print(base.RobotProtocols.showcase())
 
-type = None
-while type not in base.RobotTypes.all_type_names:
-    type = input('Choose your robot type:\n'+f'{base.RobotTypes.all_type_names}\n').upper() # TODO dorobit legendu
+protocolname = None
+while protocolname not in base.RobotProtocols.all_protocol_names:
+    protocolname = input('Choose your robot protocol:\n'+f'{base.RobotProtocols.all_protocol_names}\n').upper() # TODO dorobit legendu
+protocolclass = base.RobotProtocols.get_protocolclass_from_protocolname(protocolname.upper())
 
 name = str(input('Good choice! Now name your machine:\n'))
 while not name:
-    type = input('Name your robot:\n')
+    protocol = input('Name your robot:\n')
 
-print('{} the {} needs some weapons to fight.'.format(name, type))
+player_robot = protocolclass(name)
+print('This is your robot:\n', player_robot)
+
+print('{} the {} needs some weapons to fight.'.format(name, protocolname))
