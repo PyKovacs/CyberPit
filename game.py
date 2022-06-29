@@ -4,19 +4,28 @@ from typing import List
 import base
 
 print('\nWELCOME TO THE CYBER PIT!')
-print('Robot protocols available:\n')
-print(base.RobotProtocols.showcase())
+print('Robot builds available:\n')
+print(base.RobotBuilds.showcase())
 
-protocolname = None
-while protocolname not in base.RobotProtocols.all_protocol_names:
-    protocolname = input('Choose your robot protocol:\n'+f'{base.RobotProtocols.all_protocol_names}\n').upper() # TODO dorobit legendu
-protocolclass = base.RobotProtocols.get_protocolclass_from_protocolname(protocolname.upper())
+buildname = ''
+while buildname.capitalize() not in base.RobotBuilds.all_build_names:
+    buildname = input('Choose your robot build:\n'+f'{base.RobotBuilds.all_build_names}\n') # TODO dorobit legendu
+buildclass = base.RobotBuilds.get_buildclass_from_buildname(buildname.upper())
 
 name = str(input('Good choice! Now name your machine:\n'))
 while not name:
-    protocol = input('Name your robot:\n')
+    name = input('Name your robot:\n')
 
-player_robot = protocolclass(name)
-print('This is your robot:\n', player_robot)
+player_robot = buildclass(name)
+base.clear_console()
 
-print('{} the {} needs some weapons to fight.'.format(name, protocolname))
+print('You have {} credits on your account, let\'s buy some weapons!'.format(player_robot.money))
+
+print('Weapons available:\n')
+print(base.Weapons.showcase())
+
+print('This is your robot:\n\n' +
+      '*********************\n' +
+      name.upper(), '\n',
+      base.RobotBuilds.showcase([buildclass]))
+
