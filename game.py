@@ -1,9 +1,11 @@
-from dataclasses import dataclass
 from typing import List
-
+import intro
 import base
 
-print('\nWELCOME TO THE CYBER PIT!')
+intro.starting_sequence()
+
+
+'''
 print('Robot builds available:\n')
 print(base.RobotBuilds.showcase())
 
@@ -29,3 +31,4 @@ print('This is your robot:\n\n' +
       name.upper(), '\n',
       base.RobotBuilds.showcase([buildclass]))
 
+'''
