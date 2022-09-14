@@ -2,7 +2,8 @@ from typing import List
 import intro
 import base
 
-intro.starting_sequence()
+if __name__ == '__main__':
+    intro.starting_sequence()
 
 
 '''
