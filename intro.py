@@ -1,7 +1,13 @@
-import user_mgmt
+from user_mgmt import UserHandler
+from base import new_user_sequence, clear_console
 
 def starting_sequence():
     print('\nWELCOME TO THE CYBER PIT!')
-    user_handle = user_mgmt.UserHandler()
-    user = user_handle.user_prompt()
-    print(f'Welcome {user}, thanks for logging in...')
+    user, new = UserHandler().load_user()
+    clear_console()
+    print('\n--------------------------')
+    print(f'Welcome {user.name}!')
+    if new:
+        new_user_sequence(user)
+    print(f'Your current balance is {user.balance} bitcoins.')
+    
