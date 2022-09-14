@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
-from typing import List
+
 import os
+from user_mgmt import User
+from dcs import RobotBase
 
 def clear_console():
     if os.name == 'posix':
@@ -8,43 +9,29 @@ def clear_console():
     elif os.name == 'nt':
         os.system('cls')
 
+def new_user_sequence(user: User):
+    print(f'It seems you are new here.')
+    user.set_balance(500)
+    print('You were granted 500 bitcoins for a start, use them wisely!')
+    print(RobotsHandler.showcase())
+    user.set_robot(input('For a start, pick a robot to buy:\n'))
 
-class RobotBuilds:
 
-    @dataclass
-    class RobotBase:
-        health: int = 20
-        energy: int = 20
-        money: int = 20
-        dodge_chance: int = 10
-        miss_chance: int = 5
-
-    @dataclass
-    class Heavy(RobotBase):
-        health: int = 30
-        dodge_chance: int = 5
-        desc: str = 'Heavy tank, increased HP.'
-
-    @dataclass
-    class Light(RobotBase):
-        health: int = 15
-        money: int = 25
-        dodge_chance: int = 20
-        desc: str = 'Light construction, good at dodging.'
+class RobotsHandler:
 
     all_builds= [subcls for subcls in RobotBase.__subclasses__()]
     all_build_names= [build.__name__ for build in all_builds]
 
     @classmethod
-    def showcase(cls, scope = None):
-        title = '{}'
-        if not scope:
-            scope = cls.all_builds
-            title = '*** {} ***'
+    def showcase(cls):
+        title = '***** {} *****'
         showcase = ''
-        for r_build in scope:
-            showcase += ('{}\n -> {}\n\nHealth: \t{}\nEnergy: \t{}\nMoney: \t\t{}\nDodge chance:  \t{}%\nMiss chance:  \t{}%\n\n'
-                        .format(title.format(r_build.__name__), r_build.desc, r_build.health, r_build.energy, r_build.money, r_build.dodge_chance, r_build.miss_chance))
+        for r_build in cls.all_builds:
+            showcase += (f'{title.format(r_build.__name__.upper())}\n -> {r_build.desc}\n')
+            for key, value in r_build.__dict__.items():
+                if '__' not in str(key):
+                    showcase += f'{key.capitalize()}:\t\t {value}\n'
+            showcase += '********************\n\n'
         return showcase
     
     @classmethod
