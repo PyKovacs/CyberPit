@@ -1,15 +1,38 @@
 
+from dataclasses import dataclass
 from getpass import getpass
+from typing import Tuple, Union, Type
 import bcrypt
 
 from db import DBHandler
-from dcs import User
+from robots import RobotBase, RobotsHandler
+
+@dataclass
+class User:
+    name: str
+    robot: Union[Type[RobotBase], None] = None
+    balance: int = 0
+
+    def set_balance(self, balance: int) -> None:
+        self.balance = balance
+
+    def pay_btc(self, amount) -> bool:
+        if amount > self.balance:
+            return False
+        self.balance -= amount
+        return True
+
+    def get_btc(self, amount) -> None:
+        self.balance += amount
+
+    def set_robot(self, robot: Type[RobotBase]) -> None:    # TODO - handle if not in subclass
+        self.robot = robot
 
 class UserHandler:
     def __init__(self) -> None:
         self.db_handle = DBHandler()
 
-    def load_user(self):
+    def load_user(self) -> Tuple[User, bool]:
         username = input('If you have a user, enter you username, otherwise press Enter to create a user:\n')
         if username:
             username, new = self.existing_user(username)
@@ -58,3 +81,13 @@ class UserHandler:
         bytes = string.encode('utf-8')
         salt = bcrypt.gensalt()
         return bcrypt.hashpw(bytes, salt)
+
+def new_user_sequence(user: User):
+    print('It seems you are new here.')
+    user.set_balance(500)
+    print('You were granted 500 bitcoins for a start, use them wisely!\n')
+    print(RobotsHandler.showcase())
+    build = (input('For a start, pick a robot to buy:\n'
+                   f'{tuple(RobotsHandler.get_builds().keys())}\n'))
+    user.set_robot(RobotsHandler.get_builds()[build.capitalize()])
+    print(user.robot.desc)  # mypy sa stazuje, treba poriesit, kod funguje

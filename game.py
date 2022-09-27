@@ -1,6 +1,4 @@
-from typing import List
 import intro
-import base
 
 if __name__ == '__main__':
     intro.starting_sequence()

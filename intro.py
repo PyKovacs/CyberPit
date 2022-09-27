@@ -1,5 +1,5 @@
-from user_mgmt import UserHandler
-from base import new_user_sequence, clear_console
+from users import UserHandler, new_user_sequence
+from base import clear_console
 
 def starting_sequence():
     print('\nWELCOME TO THE CYBER PIT!')
