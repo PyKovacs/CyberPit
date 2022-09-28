@@ -1,6 +1,7 @@
 from users import UserHandler, new_user_sequence
 from base import clear_console
 
+
 def starting_sequence():
     print('\nWELCOME TO THE CYBER PIT!')
     user, new = UserHandler().load_user()
@@ -10,4 +11,3 @@ def starting_sequence():
     if new:
         new_user_sequence(user)
     print(f'Your current balance is {user.balance} bitcoins.')
-    

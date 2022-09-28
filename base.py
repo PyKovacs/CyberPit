@@ -1,6 +1,6 @@
 
 import os
-from typing import Dict
+
 
 def clear_console():
     if os.name == 'posix':

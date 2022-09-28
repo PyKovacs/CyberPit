@@ -7,6 +7,7 @@ import bcrypt
 from db import DBHandler
 from robots import RobotBase, RobotsHandler
 
+
 @dataclass
 class User:
     name: str
@@ -27,6 +28,7 @@ class User:
 
     def set_robot(self, robot: Type[RobotBase]) -> None:    # TODO - handle if not in subclass
         self.robot = robot
+
 
 class UserHandler:
     def __init__(self) -> None:
@@ -81,6 +83,7 @@ class UserHandler:
         bytes = string.encode('utf-8')
         salt = bcrypt.gensalt()
         return bcrypt.hashpw(bytes, salt)
+
 
 def new_user_sequence(user: User):
     print('It seems you are new here.')

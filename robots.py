@@ -1,9 +1,10 @@
 
 from abc import ABC
-from typing import Type, Dict
+from typing import Type, Dict, Optional
 from dataclasses import dataclass
 
-#Robots related dataclasses
+
+# Robots related dataclasses
 class RobotBase(ABC):
     health: int
     energy: int
@@ -33,10 +34,10 @@ class Light(RobotBase):
 
 class RobotsHandler:
 
-    all_builds= [subcls for subcls in RobotBase.__subclasses__()]
+    all_builds = [subcls for subcls in RobotBase.__subclasses__()]
 
     @classmethod
-    def get_builds(cls) -> Dict[str, Type[RobotBase]]:
+    def get_builds(cls) -> Optional[Dict[str, Type[RobotBase]]]:
         return {subcls.__name__: subcls for subcls in RobotBase.__subclasses__()}
 
     @classmethod
@@ -45,7 +46,8 @@ class RobotsHandler:
         showcase = ''
         for r_build in cls.all_builds:
             inst = r_build()
-            showcase += (f'{title.format(r_build.__name__.upper())}\n -> {r_build.desc}\n')
+            showcase += (f'{title.format(r_build.__name__.upper())}'
+                         f'\n -> {r_build.desc}\n')
             for key, value in inst.__dict__.items():
                 if key == 'desc' or key.startswith('__'):
                     continue
