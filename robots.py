@@ -1,6 +1,6 @@
 
 from abc import ABC
-from typing import Type, Dict, Optional
+from typing import Type, Dict
 from dataclasses import dataclass
 
 
@@ -37,8 +37,12 @@ class RobotsHandler:
     all_builds = [subcls for subcls in RobotBase.__subclasses__()]
 
     @classmethod
-    def get_builds(cls) -> Optional[Dict[str, Type[RobotBase]]]:
+    def get_all_builds(cls) -> Dict[str, Type[RobotBase]]:
         return {subcls.__name__: subcls for subcls in RobotBase.__subclasses__()}
+
+    @classmethod
+    def get_build(cls, build: str) -> Type[RobotBase]:
+        return cls.get_all_builds()[build]
 
     @classmethod
     def showcase(cls) -> str:
@@ -59,5 +63,5 @@ class RobotsHandler:
                 else:
                     showcase += ' points'
                 showcase += '\n'
-            showcase += '************************\n\n'
+            showcase += '************************\n'
         return showcase
