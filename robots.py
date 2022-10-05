@@ -1,4 +1,3 @@
-
 from typing import List
 from dataclasses import dataclass
 
@@ -14,6 +13,10 @@ class Robot:
     cost: int
 
     def __repr__(self) -> str:
+        '''
+        Representation of robot object, list of attributes.
+        Used in showcase as well as separately for specific Robot obj.
+        '''
         output = f'--- {self.name.upper()} ---\n- {self.desc} -\n'
         for param, value in self.__dict__.items():
             if param in ['name', 'desc']:
@@ -66,17 +69,23 @@ class RobotBuilds:
     # Helper methods
     @classmethod
     def _get_all_names(cls) -> List[str]:
+        '''
+        Returns all available build names (not objects).
+        '''
         return [build for build in dir(cls) if not build.startswith('_')]
 
     @classmethod
     def _get_build_obj(cls, build_name: str) -> Robot:
         '''
-        Providing a build name str will return build object
+        Providing a build name str returns build object.
         '''
         return cls.__dict__[build_name]
 
     @classmethod
     def _showcase(cls) -> str:
+        '''
+        Returns list of all builds with all attributes listed.
+        '''
         showcase = ''
         for build_name in cls._get_all_names():
             build = cls.__dict__[build_name]
