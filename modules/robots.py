@@ -7,28 +7,27 @@ class Robot:
     name: str
     health: int
     energy: int
-    dodge: int
-    miss: int
+    dodge_chance: int
+    miss_chance: int
     desc: str
     cost: int
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         '''
         Representation of robot object, list of attributes.
         Used in showcase as well as separately for specific Robot obj.
         '''
-        output = f'--- {self.name.upper()} ---\n- {self.desc} -\n'
+        output = f'|--- {self.name.upper()} ---\n| {self.desc}\n|\n'
         for param, value in self.__dict__.items():
             if param in ['name', 'desc']:
                 continue
             value = str(value)
-            if param in ['dodge', 'miss']:
+            if param in ['dodge_chance', 'miss_chance']:
                     value += ' %'
             elif param == 'cost':
                     value += ' BTC'
-            output += f'{param.capitalize()}:  {value}\n'
+            output += f'| {param.capitalize():_<17}{value:_>8} |\n'
         return output
-
 
 
 class RobotBuilds:
@@ -41,8 +40,8 @@ class RobotBuilds:
         desc='Heavy tank, increased HP.',
         health=30,
         energy=20,
-        dodge=5,
-        miss=5,
+        dodge_chance=5,
+        miss_chance=5,
         cost=300
     )
 
@@ -51,8 +50,8 @@ class RobotBuilds:
         desc='Light construction, good at dodging.',
         health=15,
         energy=20,
-        dodge=20,
-        miss=5,
+        dodge_chance=20,
+        miss_chance=5,
         cost=250
     )
 
@@ -61,10 +60,21 @@ class RobotBuilds:
         desc='The one you cannot afford.',
         health=100,
         energy=100,
-        dodge=15,
-        miss=1,
+        dodge_chance=15,
+        miss_chance=1,
         cost=5000
     )
+
+    @classmethod
+    def _showcase(cls) -> str:
+        '''
+        Returns list of all builds with all attributes listed.
+        '''
+        showcase = ''
+        for build_name in cls._get_all_names():
+            build = cls.__dict__[build_name]
+            showcase += str(build) + '\n'
+        return showcase
 
     # Helper methods
     @classmethod
@@ -80,15 +90,3 @@ class RobotBuilds:
         Providing a build name str returns build object.
         '''
         return cls.__dict__[build_name]
-
-    @classmethod
-    def _showcase(cls) -> str:
-        '''
-        Returns list of all builds with all attributes listed.
-        '''
-        showcase = ''
-        for build_name in cls._get_all_names():
-            build = cls.__dict__[build_name]
-            showcase += str(build)
-            showcase += '************************\n\n'
-        return showcase

@@ -5,8 +5,8 @@ from typing import Tuple, Optional
 import bcrypt
 from time import sleep
 
-from db import DBHandler
-from robots import RobotBuilds, Robot
+from modules.db import DBHandler
+from modules.robots import RobotBuilds, Robot
 
 
 @dataclass
@@ -16,22 +16,23 @@ class User:
     robot: Optional[Robot] = None
     balance: int = 0
     
-
-    def set_balance(self, balance: int) -> None:
+    def set_balance(self, balance: int, show: bool = True) -> None:
         '''
         Sets user balance to provided value. Writes to DB.
         Calls show_balance.
+        show argument sets if balance is printed after update
         '''
         self.balance = balance
         self.db_handle.update_balance('users', self.name, self.balance)
-        self.show_balance()
+        if show:
+            self.show_balance()
         sleep(2)
 
     def show_balance(self) -> None:
         '''
         Prints user balance statement.
         '''
-        print(f' $$$ Current balance: {self.balance} BTC. $$$')
+        print(f'$$$ Current balance: {self.balance} BTC.')
 
     
     def set_robot(self, robot: Robot) -> None:
@@ -46,7 +47,7 @@ class User:
         '''
         Adds provided amount to balance. Calls set balance.
         '''
-        print(f' $$$ {amount} BTC earned! $$$')
+        print(f'$$$ {amount} BTC earned!')
         sleep(2)
         self.set_balance(self.balance + amount)
 
@@ -56,10 +57,10 @@ class User:
         Returns bool (False if balance insufficient)
         '''
         if amount > self.balance:
-            print(' $$$ Insufficient funds :( $$$')
+            print('$$$ Insufficient funds :(')
             sleep(2)
             return False
-        print(f' $$$ {amount} BTC paid. $$$')
+        print(f'$$$ {amount} BTC paid.')
         sleep(2)
         self.set_balance(self.balance - amount)
         return True
@@ -72,8 +73,12 @@ class User:
         self.show_balance()
         builds = tuple(RobotBuilds._get_all_names())
         while True:
-            build_name = input('\nSelect a robot you wish to buy:\n'
-                          f'{builds}\n').capitalize()
+            print('\nSelect a robot you wish to buy.')
+            print(builds)
+            print('(type "cancel" to return to main menu)')
+            build_name = input('').capitalize()
+            if build_name == 'Cancel':
+                return
             if build_name not in builds:
                 print(f'  -> {build_name} is not valid robot build.')
                 sleep(2)
@@ -84,9 +89,6 @@ class User:
             else:
                 break
         self.set_robot(build)
-        assert self.robot is not None, 'Failed to assign a robot.'
-        # asserted here to avoid mypy error on line below
-        print(f'You got yourself a new robot: {self.robot.name} !')
 
     @staticmethod
     def _init_from_dict(dict, db_handle: DBHandler) -> 'User':
@@ -109,24 +111,32 @@ class UserHandler:
         Prompts for username.
         Returns tuple of user object and bool (True if user is new).
         '''
-        username = input('If you have a user, enter you username, '
-                         'otherwise press Enter to create a user:\n')
-        if username:
-            return self.existing_user(username)
-        return self.new_user()
+        while True:
+            username = input('If you have a user, enter you username, '
+                            'otherwise press Enter to create a user:\n')
+            if username:
+                if not self.db_handle.user_exists('users', username):
+                    print(f'User with name "{username}" does not exist.\n')
+                    sleep(2)
+                    continue
+                return self.existing_user(username)
+            return self.new_user()
 
     def new_user(self) -> Tuple[User, bool]:
         '''
         Creates a new user + password. Writes to DB.
         Returns tuple of user object and bool (True as user is new).
         '''
-        username = input('Enter username for new user: ')
-        while not username:
-            username = input('Username invalid, try again: ')
-        while self.db_handle.user_exists('users', username):
-            username = input(f'\nUser with name {username} already exists.\n'
-                             'Choose a different username: ')
-        password = self._set_password()
+        while True:
+            username = str(input('Enter username for new user: '))
+            if not username:
+                print('Username invalid.')
+                continue
+            if self.db_handle.user_exists('users', username):
+                print(f'User with name {username} already exists.')
+                continue
+            break
+        password = self.set_password()
         self.db_handle.create_user('users', username, password)
         user = User(username, self.db_handle)
         return user, True
@@ -136,13 +146,8 @@ class UserHandler:
         Authenticate existing user,
         instantiate user object from dict.
 
-        Returns tuple of user object and bool (True if user is new).
+        Returns tuple of user object and bool (False as user is not new).
         '''
-        while not self.db_handle.user_exists('users', username):    # TODO - refactor - move the self.new_user elsewhere so this func is for existing users only
-            if username == '':
-                return self.new_user()
-            username = input(f'User with name "{username}" does not exist.\n'
-                         'Enter your username: ')
         access = False
         while not access:
             access = bcrypt.checkpw(getpass().encode('utf-8'),
@@ -151,21 +156,23 @@ class UserHandler:
                 print(':-(')
                 sleep(2)
         print('<-- ACCESS GRANTED -->')
-        sleep(4)
+        sleep(1)
         user_data = self.db_handle.get_user_data('users', username)
         user = User._init_from_dict(user_data, self.db_handle)
         return user, False
 
-    def _set_password(self) -> str:
+    def set_password(self) -> str:
         '''
         Prompts for new password using getpass.
         '''
-        pwd = str(getpass('Enter password for new user: '))     # TODO - use while
-        confirm = str(getpass('Confirm the password for new user: '))
-        if pwd != confirm:
-            print('Passwords does not match!\n')
-            sleep(2)
-            self._set_password()
+        while True:
+            pwd = str(getpass('Enter password for new user: '))
+            confirm = str(getpass('Confirm the password for new user: '))
+            if pwd != confirm:
+                print('Passwords does not match!\n')
+                sleep(2)
+                continue
+            break
         return self._get_hash(pwd)
 
     def _get_hash(self, string: str) -> str:
@@ -185,6 +192,6 @@ def new_user_sequence(user: User) -> None:
     print('It seems you are new here.')
     sleep(2)
     print('You were granted 500 bitcoins for a start, use them wisely!\n')
-    user.set_balance(500)
+    user.set_balance(500, show=False)
     sleep(3)
     user.purchase_robot()

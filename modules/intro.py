@@ -1,5 +1,5 @@
-from users import UserHandler, User, new_user_sequence
-from utils import clear_console
+from modules.users import UserHandler, User, new_user_sequence
+from modules.utils import clear_console, theme
 from time import sleep
 
 
@@ -14,8 +14,5 @@ def starting_sequence(user_handler: UserHandler) -> User:
     if new:
         new_user_sequence(user)
         clear_console()
-    print('\n--------------------------')
-    print(f'Welcome {user.name}!')
-    sleep(1)
-    print(f'Your current robot: \n{user.robot}')
+    theme()
     return user
