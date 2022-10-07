@@ -34,6 +34,9 @@ def clear_console() -> None:
         os.system('cls')
 
 def theme() -> None:
+    '''
+    Theme show at the beginning of the game.
+    '''
     clear_console()
     sleep_time = 0.008
     for line in THEME_TITLE:

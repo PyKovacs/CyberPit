@@ -32,7 +32,7 @@ class Robot:
         return output
 
 
-class RobotBuilds:
+class RobotBuilds:      # TODO consider factory design pattern
     '''
     Contains all builds of robots + helper methods.
     '''

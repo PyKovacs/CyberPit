@@ -7,6 +7,7 @@ from time import sleep
 
 from src.db import DBHandler
 from src.robots import RobotBuilds, Robot
+from src.utils import clear_console
 
 
 @dataclass
@@ -23,7 +24,7 @@ class User:
         show argument sets if balance is printed after update
         '''
         self.balance = balance
-        self.db_handle.update_balance('users', self.name, self.balance)
+        self.db_handle.update_balance(self.name, self.balance)
         if show:
             print(self.get_balance())
         sleep(2)
@@ -44,7 +45,7 @@ class User:
         '''
         self.robot = robot
         assert self.robot is not None
-        self.db_handle.update_robot('users', self.name, self.robot.name)
+        self.db_handle.update_robot(self.name, self.robot.name)
 
     def get_btc(self, amount: int) -> None:
         '''
@@ -61,10 +62,10 @@ class User:
         '''
         if amount > self.balance:
             print('$$$ Insufficient funds :(')
-            sleep(2)
+            sleep(1)
             return False
         print(f'$$$ {amount} BTC paid.')
-        sleep(2)
+        sleep(1)
         self.set_balance(self.balance - amount)
         return True
 
@@ -72,8 +73,10 @@ class User:
         '''
         Function for buying a new robot from the showcase.
         '''
-        print(RobotBuilds._showcase())
+        print('*** WELCOME TO TO ROBOT SHOP ***')
+        print('Please, have a look on the finest selection.')
         print(self.get_balance())
+        print(RobotBuilds._showcase())
         builds = tuple(RobotBuilds._get_all_names())
         while True:
             print('\nSelect a robot you wish to buy.')
@@ -126,7 +129,7 @@ class PwdManager:
         Asks for pwd and returns True if pwd match the one from DB
         '''
         return bcrypt.checkpw(getpass().encode('utf-8'),
-                              db_handle.get_pwdhash('users', username))
+                              db_handle.get_pwdhash(username))
 
     def _get_hash(self, string: str) -> str:
         '''
@@ -142,23 +145,23 @@ class UserManager:
         self.db_handle = db_handler
         self.pwd_manager = pwd_manager
 
-    def user_login(self) -> Tuple[User, bool]:
+    def read_username(self) -> User:
         '''
-        Prompts for username.
-        Returns tuple of user object and bool (True if user is new).
+        Prompts for username. Calls new_user or existing_user func.
+        Returns User object.
         '''
         while True:
             username = input('If you have a user, enter you username, '
                             'otherwise press Enter to create a user:\n')
-            if username:
-                if not self.db_handle.user_exists('users', username):
-                    print(f'User with name "{username}" does not exist.\n')
-                    sleep(.5)
-                    continue
-                return self.existing_user(username)
-            return self.new_user()
-
-    def new_user(self) -> Tuple[User, bool]:
+            if not username:
+                return self.create_new_user()
+            if not self.db_handle.user_exists(username):
+                print(f'User with name "{username}" does not exist.\n')
+                sleep(.5)
+                continue
+            return self.load_existing_user(username)
+            
+    def create_new_user(self) -> User:
         '''
         Creates a new user + password. Writes to DB.
         Returns tuple of user object and bool (True as user is new).
@@ -168,16 +171,17 @@ class UserManager:
             if not username:
                 print('Username invalid.')
                 continue
-            if self.db_handle.user_exists('users', username):
+            if self.db_handle.user_exists(username):
                 print(f'User with name {username} already exists.')
                 continue
             break
         password = self.pwd_manager.get_password()
-        self.db_handle.create_user('users', username, password)
+        self.db_handle.create_user(username, password)
         user = User(username, self.db_handle)
-        return user, True
+        self.new_user_procedure(user)
+        return user
 
-    def existing_user(self, username: str) -> Tuple[User, bool]:
+    def load_existing_user(self, username: str) -> User:
         '''
         Authenticate existing user,
         instantiate user object from dict.
@@ -191,19 +195,20 @@ class UserManager:
                 print(':-(')
         print('<-- ACCESS GRANTED -->')
         sleep(1)
-        user_data = self.db_handle.get_user_data('users', username)
+        user_data = self.db_handle.get_user_data(username)
         user = User._init_from_dict(user_data, self.db_handle)
-        return user, False
+        return user
 
     @staticmethod
-    def new_user_sequence(user: User) -> None:
+    def new_user_procedure(user: User) -> None:
         '''
         Grants 500 BTC to balance, calls purchase robot func.
         Sequence to start if user is new.
         '''
+        clear_console()
         print('It seems you are new here.')
-        sleep(2)
+        sleep(1)
         print('You were granted 500 bitcoins for a start, use them wisely!\n')
         user.set_balance(500, show=False)
-        sleep(3)
+        sleep(2)
         user.purchase_robot()
