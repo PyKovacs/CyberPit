@@ -199,8 +199,7 @@ class UserManager:
         user = User._init_from_dict(user_data, self.db_handle)
         return user
 
-    @staticmethod
-    def new_user_procedure(user: User) -> None:
+    def new_user_procedure(self, user: User) -> None:
         '''
         Grants 500 BTC to balance, calls purchase robot func.
         Sequence to start if user is new.
