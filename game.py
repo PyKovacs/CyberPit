@@ -9,18 +9,24 @@ class Game:
         self.main_menu = main_menu
 
     def user_init(self, user: User):
+        '''
+        Initialize the user.
+        '''
         self.user = user
 
     def starting_sequence(self):
         '''
         Starting sequence for user login/creation.
-        Returns user object
+        Displays the theme title intro.
         '''
         self.user_init(self.user_manager.read_username())
         clear_console()
         theme()
     
     def run(self):
+        '''
+        Game flow sequence.
+        '''
         self.starting_sequence()
         self.main_menu.present_menu(self.user)
 
