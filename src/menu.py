@@ -5,7 +5,17 @@ from src.users import UserManager, User
 from src.utils import clear_console, theme
 
 class MainMenu:
-    def display_menu(self) -> str:
+
+    def get_menu_options(self) -> Dict[str, str]:
+        '''
+        Returns main menu options list
+        '''
+        return {'battle': 'Enter the PIT and fight!', 
+                'robot': 'Shows your robot details.', 
+                'shop': 'Enter the robot shop.', 
+                'quit': 'Exit the game.'}
+
+    def get_menu(self) -> str:
         '''
         Returns str of main menu options
         '''
@@ -16,15 +26,15 @@ class MainMenu:
         menu += f'\n{"":#^20}'
         return menu
 
-    def run(self, user: User) -> None:
+    def present_menu(self, user: User) -> None:
         '''
-        Executes main menu
+        Presents the main menu
         '''
         details = False
         while True:
             clear_console()
-            print(user.name.upper())
             print('----------------------------')
+            print(user.name.upper())
             if user.robot:
                 if details:
                     print(user.robot)
@@ -32,33 +42,26 @@ class MainMenu:
                     print(f'Your current robot: {user.robot.name}')
             else:
                 print('You don\'t have any robot yet.')
-            details = False
             print('Your balance: ' + user.get_balance(full=False))
-            print(self.display_menu())
-            action = input(f'\nPick your action: \n{tuple(self.get_menu_options().keys())}\n')
-            if action.lower() == 'shop':
-                clear_console()
-                user.purchase_robot()
-                continue
-            if action.lower() == 'robot':
-                details = True
-                user.robot
-                continue
-            if action.lower() == 'battle':
-                print('Sorry, still in construction...')
-                sleep(2)
-                continue
-            if action.lower() == 'quit':
-                exit(0)
+            print(self.get_menu())
+            details = self.execute_option(user)
+            continue
     
-    def get_menu_options(self) -> Dict[str, str]:
-        '''
-        Returns main menu options list
-        '''
-        return {'battle': 'Enter the PIT and fight!', 
-                'Robot': 'Shows your robot details.', 
-                'shop': 'Enter the robot shop.', 
-                'quit': 'Exit the game.'}
+    def execute_option(self, user: User) -> bool:
+        action = input(f'\nPick your action: \n{tuple(self.get_menu_options().keys())}\n')
+        if action.lower() == 'quit':
+            exit(0)
+        if action.lower() == 'shop':
+            clear_console()
+            user.purchase_robot()                
+        if action.lower() == 'robot':
+            user.robot
+            return True
+        if action.lower() == 'battle':
+            print('Sorry, still in construction...')
+            sleep(2)
+        return False
+            
 
     def starting_sequence(self, user_manager: UserManager) -> User:
         '''

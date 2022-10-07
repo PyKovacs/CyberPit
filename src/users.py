@@ -68,7 +68,7 @@ class User:
         self.set_balance(self.balance - amount)
         return True
 
-    def purchase_robot(self) -> None:
+    def purchase_robot(self) -> None:       # TODO refactor - maybe move to RobotBuilds
         '''
         Function for buying a new robot from the showcase.
         '''
