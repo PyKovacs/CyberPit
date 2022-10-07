@@ -1,8 +1,8 @@
 from typing import Dict
 from time import sleep
 
-from src.users import UserManager, User
-from src.utils import clear_console, theme
+from src.users import User
+from src.utils import clear_console
 
 class MainMenu:
 
@@ -44,35 +44,22 @@ class MainMenu:
                 print('You don\'t have any robot yet.')
             print('Your balance: ' + user.get_balance(full=False))
             print(self.get_menu())
-            details = self.execute_option(user)
-            continue
+            details = False
+            if self.execute_option(user) == 'robot':
+                details = True
     
-    def execute_option(self, user: User) -> bool:
-        action = input(f'\nPick your action: \n{tuple(self.get_menu_options().keys())}\n')
-        if action.lower() == 'quit':
+    def execute_option(self, user: User) -> str:
+        print('\nPick your action.')
+        print(tuple(self.get_menu_options().keys()))
+        action = input('').lower()
+        if action == 'quit':
             exit(0)
-        if action.lower() == 'shop':
+        if action == 'shop':
             clear_console()
-            user.purchase_robot()                
-        if action.lower() == 'robot':
-            user.robot
-            return True
-        if action.lower() == 'battle':
+            user.purchase_robot()
+        if action == 'battle':
             print('Sorry, still in construction...')
             sleep(2)
-        return False
+        return action
             
 
-    def starting_sequence(self, user_manager: UserManager) -> User:
-        '''
-        Starting sequence for user login/creation.
-        Returns user object
-        '''
-        print('\nWELCOME TO THE CYBER PIT!')
-        user, new = user_manager.user_login()
-        clear_console()
-        if new:
-            user_manager.new_user_sequence(user)
-            clear_console()
-        theme()
-        return user
