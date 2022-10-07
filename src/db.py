@@ -2,13 +2,14 @@ import sqlite3
 from typing import Dict
 
 DB_FILE = "data/main.db"
+USER_TABLE = 'users'
 
 
 class DBHandler:
     def __init__(self):
         self.conn: sqlite3.Connection = sqlite3.connect(DB_FILE)
-        if not self.table_exists('users'):
-            if not self.create_users_table():
+        if not self.table_exists(USER_TABLE):
+            if not self.create_table():
                 print('ERROR: Failed creating users db table!')
                 exit(5)
 
@@ -19,16 +20,16 @@ class DBHandler:
         cursor = self.conn.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
         return bool(cursor.fetchall())
 
-    def create_users_table(self) -> bool:
+    def create_table(self, table_name: str = USER_TABLE) -> bool:
         '''
-        Creates users table.
+        Creates table with predefined collumns in sqlite db.
         '''
-        self.conn.execute('CREATE TABLE users (name TEXT PRIMARY KEY NOT NULL, '
+        self.conn.execute(f'CREATE TABLE {table_name} (name TEXT PRIMARY KEY NOT NULL, '
                           'pwd BLOB NOT NULL, robot TEXT, balance INT);')
         self.conn.commit()
-        return self.table_exists('users')
+        return self.table_exists(table_name)
 
-    def create_user(self, table: str, name: str, passwd: str, robot: str = '', balance: int = 0) -> None:
+    def create_user(self, name: str, passwd: str, robot: str = '', balance: int = 0, table: str = USER_TABLE) -> None:
         '''
         Creates user row with provided values.
         '''
@@ -40,7 +41,7 @@ class DBHandler:
             print(emsg)
             exit(5)
 
-    def update_robot(self, table: str, user: str, robot: str) -> None:
+    def update_robot(self, user: str, robot: str, table: str = USER_TABLE) -> None:
         '''
         Updates the robot value for specific user.
         '''
@@ -52,7 +53,7 @@ class DBHandler:
             print(emsg)
             exit(5)
 
-    def update_balance(self, table: str, user: str, balance: int) -> None:
+    def update_balance(self, user: str, balance: int, table: str = USER_TABLE) -> None:
         '''
         Updates the balance value for specific user.
         '''
@@ -64,7 +65,7 @@ class DBHandler:
             print(emsg)
             exit(5)
 
-    def get_user_data(self, table: str, username: str) -> Dict[str,str]:
+    def get_user_data(self, username: str, table: str = USER_TABLE) -> Dict[str,str]:
         '''
         Returns dict of user data from users table.
         '''
@@ -76,14 +77,14 @@ class DBHandler:
             data[column] = row[0][index]
         return data
 
-    def user_exists(self, table: str, name: str) -> bool:
+    def user_exists(self, name: str, table: str = USER_TABLE) -> bool:
         '''
         Returns True if user exists in users table.
         '''
         cursor = self.conn.execute(f"SELECT name from {table} where name='{name}'")
         return bool(cursor.fetchall())
 
-    def get_pwdhash(self, table: str, name: str) -> bytes:  # TODO - set table default value to users, for each func in db handle, adjust all calls
+    def get_pwdhash(self, name: str, table: str = USER_TABLE) -> bytes:
         '''
         Returns pwd hash for specific user from specific table.
         '''
