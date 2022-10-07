@@ -17,7 +17,8 @@ class Robot:
         Representation of robot object, list of attributes.
         Used in showcase as well as separately for specific Robot obj.
         '''
-        output = f'|--- {self.name.upper()} ---\n| {self.desc}\n|\n'
+        output = " " + 28*'_' + '\n'
+        output += f'| {self.name.upper()}\n| {self.desc}\n|\n'
         for param, value in self.__dict__.items():
             if param in ['name', 'desc']:
                 continue
@@ -26,7 +27,8 @@ class Robot:
                     value += ' %'
             elif param == 'cost':
                     value += ' BTC'
-            output += f'| {param.capitalize():_<17}{value:_>8} |\n'
+            output += f'| {param.capitalize():<17}{value:>8} |\n'
+        output += "|" + 27*'_' + "|" + '\n'
         return output
 
 
@@ -47,7 +49,7 @@ class RobotBuilds:
 
     Light = Robot(
         name = 'Light',
-        desc='Light construction, good at dodging.',
+        desc='Lower HP, good at dodging.',
         health=15,
         energy=20,
         dodge_chance=20,

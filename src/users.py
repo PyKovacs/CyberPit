@@ -25,15 +25,18 @@ class User:
         self.balance = balance
         self.db_handle.update_balance('users', self.name, self.balance)
         if show:
-            self.show_balance()
+            print(self.get_balance())
         sleep(2)
 
-    def show_balance(self) -> None:
+    def get_balance(self, full: bool = True) -> str:
         '''
         Prints user balance statement.
+        full argument sets if to return full statement,
+        if False, returns only BTC value
         '''
-        print(f'$$$ Current balance: {self.balance} BTC.')
-
+        if full:
+            return f'$$$ Current balance: {self.balance} BTC.'
+        return f'{self.balance} BTC'
     
     def set_robot(self, robot: Robot) -> None:
         '''
@@ -70,7 +73,7 @@ class User:
         Function for buying a new robot from the showcase.
         '''
         print(RobotBuilds._showcase())
-        self.show_balance()
+        print(self.get_balance())
         builds = tuple(RobotBuilds._get_all_names())
         while True:
             print('\nSelect a robot you wish to buy.')
@@ -102,9 +105,42 @@ class User:
             print('Failed to initiate a user from dictionary')
             exit(2)
 
-class UserHandler:
-    def __init__(self, db_handler: DBHandler) -> None:
+
+class PwdManager:
+    def get_password(self) -> str:
+        '''
+        Prompts for new password using getpass. Returns hashed pwd.
+        '''
+        while True:
+            pwd = str(getpass('Enter password for new user: '))
+            confirm = str(getpass('Confirm the password for new user: '))
+            if pwd != confirm:
+                print('Passwords does not match!\n')
+                sleep(2)
+                continue
+            break
+        return self._get_hash(pwd)
+
+    def eval_match(self, username: str, db_handle: DBHandler) -> bool:
+        '''
+        Asks for pwd and returns True if pwd match the one from DB
+        '''
+        return bcrypt.checkpw(getpass().encode('utf-8'),
+                              db_handle.get_pwdhash('users', username))
+
+    def _get_hash(self, string: str) -> str:
+        '''
+        Generates hash with salt. Using bcrypt.
+        '''
+        bytes = string.encode('utf-8')
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(bytes, salt)
+
+
+class UserManager:
+    def __init__(self, db_handler: DBHandler, pwd_manager: PwdManager) -> None:
         self.db_handle = db_handler
+        self.pwd_manager = pwd_manager
 
     def user_login(self) -> Tuple[User, bool]:
         '''
@@ -117,7 +153,7 @@ class UserHandler:
             if username:
                 if not self.db_handle.user_exists('users', username):
                     print(f'User with name "{username}" does not exist.\n')
-                    sleep(2)
+                    sleep(.5)
                     continue
                 return self.existing_user(username)
             return self.new_user()
@@ -136,7 +172,7 @@ class UserHandler:
                 print(f'User with name {username} already exists.')
                 continue
             break
-        password = self.set_password()
+        password = self.pwd_manager.get_password()
         self.db_handle.create_user('users', username, password)
         user = User(username, self.db_handle)
         return user, True
@@ -150,48 +186,24 @@ class UserHandler:
         '''
         access = False
         while not access:
-            access = bcrypt.checkpw(getpass().encode('utf-8'),
-                                    self.db_handle.get_pwdhash('users', username))
+            access = self.pwd_manager.eval_match(username, self.db_handle)
             if not access:
                 print(':-(')
-                sleep(2)
         print('<-- ACCESS GRANTED -->')
         sleep(1)
         user_data = self.db_handle.get_user_data('users', username)
         user = User._init_from_dict(user_data, self.db_handle)
         return user, False
 
-    def set_password(self) -> str:
+    @staticmethod
+    def new_user_sequence(user: User) -> None:
         '''
-        Prompts for new password using getpass.
+        Grants 500 BTC to balance, calls purchase robot func.
+        Sequence to start if user is new.
         '''
-        while True:
-            pwd = str(getpass('Enter password for new user: '))
-            confirm = str(getpass('Confirm the password for new user: '))
-            if pwd != confirm:
-                print('Passwords does not match!\n')
-                sleep(2)
-                continue
-            break
-        return self._get_hash(pwd)
-
-    def _get_hash(self, string: str) -> str:
-        '''
-        Generates hash with salt. Using bcrypt.
-        '''
-        bytes = string.encode('utf-8')
-        salt = bcrypt.gensalt()
-        return bcrypt.hashpw(bytes, salt)
-
-
-def new_user_sequence(user: User) -> None:
-    '''
-    Grants 500 BTC to balance, calls purchase robot func.
-    Sequence to start if user is new.
-    '''
-    print('It seems you are new here.')
-    sleep(2)
-    print('You were granted 500 bitcoins for a start, use them wisely!\n')
-    user.set_balance(500, show=False)
-    sleep(3)
-    user.purchase_robot()
+        print('It seems you are new here.')
+        sleep(2)
+        print('You were granted 500 bitcoins for a start, use them wisely!\n')
+        user.set_balance(500, show=False)
+        sleep(3)
+        user.purchase_robot()

@@ -20,7 +20,8 @@ THEME_TITLE: Tuple = (
 '#        ####             ####        ####               #',
 '#       ####             ####        ####  ##            #',
 '#      ####             ####        ########             #',
-'##########################################################'
+'##########################################################',
+'                                               by PyKovacs'
 )
 
 def clear_console() -> None:
@@ -35,7 +36,9 @@ def clear_console() -> None:
 def theme() -> None:
     clear_console()
     sleep_time = 0.008
-    for line_number, line in enumerate(THEME_TITLE):
+    for line in THEME_TITLE:
+        if 'PyKovacs' in line:
+            sleep_time = 0.015
         for char in line:
             print(char, end="", flush=True)
             sleep(sleep_time)
