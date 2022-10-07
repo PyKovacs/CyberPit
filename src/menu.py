@@ -35,7 +35,7 @@ class MainMenu:
             details = False
             print('Your balance: ' + user.get_balance(full=False))
             print(self.display_menu())
-            action = input(f'\nPick your action: \n{self.get_menu_options().keys()}\n')
+            action = input(f'\nPick your action: \n{tuple(self.get_menu_options().keys())}\n')
             if action.lower() == 'shop':
                 clear_console()
                 user.purchase_robot()
