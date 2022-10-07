@@ -1,5 +1,5 @@
-from modules.users import UserHandler, User, new_user_sequence
-from modules.utils import clear_console, theme
+from src.users import UserHandler, User, new_user_sequence
+from src.utils import clear_console, theme
 from time import sleep
 
 

@@ -5,8 +5,8 @@ from typing import Tuple, Optional
 import bcrypt
 from time import sleep
 
-from modules.db import DBHandler
-from modules.robots import RobotBuilds, Robot
+from src.db import DBHandler
+from src.robots import RobotBuilds, Robot
 
 
 @dataclass
