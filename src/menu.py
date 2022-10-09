@@ -56,7 +56,7 @@ class MainMenu:
             exit(0)
         if action == 'shop':
             clear_console()
-            user.purchase_robot()
+            user.buy_robot()
         if action == 'battle':
             print('Sorry, still in construction...')
             sleep(2)

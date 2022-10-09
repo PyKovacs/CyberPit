@@ -69,32 +69,23 @@ class User:
         self.set_balance(self.balance - amount)
         return True
 
-    def purchase_robot(self) -> None:       # TODO refactor - maybe move to RobotBuilds
+    def buy_robot(self) -> None:
         '''
-        Function for buying a new robot from the showcase.
+        Function for buying a new robot. 
+        Enters robot shop, evaluate selection,
+        pays for the robot and set the robot to the user.
         '''
-        print('*** WELCOME TO TO ROBOT SHOP ***')
-        print('Please, have a look on the finest selection.')
-        print(self.get_balance())
-        print(RobotBuilds._showcase())
-        builds = tuple(RobotBuilds._get_all_names())
         while True:
-            print('\nSelect a robot you wish to buy.')
-            print(builds)
-            print('(type "cancel" to return to main menu)')
-            build_name = input('').capitalize()
-            if build_name == 'Cancel':
+            shop_output = RobotBuilds._robot_shop(self.get_balance())
+            if shop_output == 'cancel':
                 return
-            if build_name not in builds:
-                print(f'  -> {build_name} is not valid robot build.')
-                sleep(2)
-                continue
-            build = RobotBuilds._get_build_obj(build_name)
-            if not self.pay_btc(build.cost):
-                continue
-            else:
-                break
-        self.set_robot(build)
+            if isinstance(shop_output, Robot):
+                if self.pay_btc(shop_output.cost):
+                    self.set_robot(shop_output)
+                    return
+            sleep(2)
+            clear_console()
+            continue
 
     @staticmethod
     def _init_from_dict(dict, db_handle: DBHandler) -> 'User':
@@ -210,4 +201,4 @@ class UserManager:
         print('You were granted 500 bitcoins for a start, use them wisely!\n')
         user.set_balance(500, show=False)
         sleep(2)
-        user.purchase_robot()
+        user.buy_robot()

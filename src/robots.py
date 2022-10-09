@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Union
 from dataclasses import dataclass
-
+from time import sleep
 
 @dataclass
 class Robot:
@@ -92,3 +92,27 @@ class RobotBuilds:      # TODO consider factory design pattern
         Providing a build name str returns build object.
         '''
         return cls.__dict__[build_name]
+
+    @classmethod
+    def _robot_shop(cls, balance: str) -> Union[str, Robot]:
+        '''
+        Prints welcome msg, available robot builds and prompts
+        for selection. 
+        Returns "cancel", empty string or Robot obj.
+        '''
+        print('*** WELCOME TO TO ROBOT SHOP ***',
+              'Please, have a look on the finest selection.',
+              balance, cls._showcase(), sep='\n')
+        builds = tuple(cls._get_all_names())
+        print('Select a robot you wish to buy.',
+               builds, '(type "cancel" to return to main menu)', 
+               sep='\n')
+        build_name = input('').capitalize()
+        if build_name == 'Cancel':
+            return 'cancel'
+        if build_name not in builds:
+            print(f'"{build_name}" is not valid robot build.')
+            sleep(2)
+            return ""
+        return cls._get_build_obj(build_name)
+        
