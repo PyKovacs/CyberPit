@@ -149,12 +149,13 @@ class UserManager:
             username = input('If you have a user, enter you username, '
                             'otherwise press Enter to create a user:\n')
             if not username:
-                return self.create_new_user()
+                self.current_user = self.create_new_user()
             if not self.db_handle.user_exists(username):
                 print(f'User with name "{username}" does not exist.\n')
                 sleep(.5)
                 continue
-            return self.load_existing_user(username)
+            self.current_user = self.load_existing_user(username)
+            return self.current_user
             
     def create_new_user(self) -> User:
         '''
