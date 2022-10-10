@@ -2,6 +2,16 @@ from typing import List, Union
 from dataclasses import dataclass
 from time import sleep
 
+WEAPONS = {
+    'laser': 6,
+    'bumper': 3,
+    'saw': 4,
+    'flipper': 7,
+    'plasma_gun': 12,
+    'flame_thrower': 9,
+    'spike': 2
+}
+
 @dataclass
 class Robot:
     name: str
@@ -11,6 +21,7 @@ class Robot:
     miss_chance: int
     desc: str
     cost: int
+    weapons: List[str]
 
     def __str__(self) -> str:
         '''
@@ -18,9 +29,10 @@ class Robot:
         Used in showcase as well as separately for specific Robot obj.
         '''
         output = " " + 28*'_' + '\n'
-        output += f'| {self.name.upper()}\n| {self.desc}\n|\n'
+        output += f'| {self.name.upper()}\n| {self.desc}\n'
+        output += f'| Equipped: {self.weapons}\n|\n'
         for param, value in self.__dict__.items():
-            if param in ['name', 'desc']:
+            if param in ['name', 'desc', 'weapons']:
                 continue
             value = str(value)
             if param in ['dodge_chance', 'miss_chance']:
@@ -44,7 +56,8 @@ class RobotBuilds:      # TODO consider factory design pattern
         energy=20,
         dodge_chance=5,
         miss_chance=5,
-        cost=300
+        cost=300,
+        weapons=['bumper', 'laser', 'flame_thrower', 'spike']
     )
 
     Light = Robot(
@@ -54,7 +67,8 @@ class RobotBuilds:      # TODO consider factory design pattern
         energy=20,
         dodge_chance=20,
         miss_chance=5,
-        cost=250
+        cost=250,
+        weapons=['saw', 'flipper', 'laser']
     )
 
     Expensive = Robot(
@@ -64,7 +78,8 @@ class RobotBuilds:      # TODO consider factory design pattern
         energy=100,
         dodge_chance=15,
         miss_chance=1,
-        cost=5000
+        cost=5000,
+        weapons=['flame_thrower', 'flipper', 'plasma_gun']
     )
 
     @classmethod
