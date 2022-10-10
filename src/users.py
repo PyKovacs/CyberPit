@@ -14,7 +14,7 @@ from src.utils import clear_console
 class User:
     name: str
     db_handle: DBHandler
-    robot: Optional[Robot] = None
+    robot: Robot = RobotManager().blank_build
     balance: int = 0
 
     @staticmethod
@@ -59,7 +59,6 @@ class User:
         Assigns robot to a user. Writes to DB.
         '''
         self.robot = robot
-        assert self.robot is not None
         self.db_handle.update_robot(self.name, self.robot.name)
 
     def get_btc(self, amount: int) -> None:

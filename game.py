@@ -15,8 +15,8 @@ class Game:
         self.user_manager = UserManager(self.db_handler, 
                                 self.pwd_manager, 
                                 self.robot_manager)
-        self.pit = ThePit(self.robot_manager)
         self.user = self.user_manager.read_username()
+        self.pit = ThePit(self.robot_manager, self.user_manager)
         self.main_menu = MainMenu(self.user, self.pit)
         theme()
     

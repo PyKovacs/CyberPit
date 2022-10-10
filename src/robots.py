@@ -3,6 +3,7 @@ from abc import ABC
 from typing import List, Tuple, Union, Dict
 from time import sleep
 
+import random
 import json
 
 WEAPONS = {
@@ -13,6 +14,18 @@ WEAPONS = {
     'plasma_gun': 12,
     'flame_thrower': 9,
     'spike': 2
+}
+
+BLANK_BUILD: Dict[str, Union[str, int, List[str]]]
+BLANK_BUILD = {
+        "name": "",
+        "desc": "",
+        "weapons": [],
+        "health": 0,
+        "energy": 0,
+        "dodge_chance": 0,
+        "miss_chance": 0,
+        "cost": 0
 }
 
 PATH_TO_BUILDS = 'data/builds.json'
@@ -53,6 +66,29 @@ class Robot(RobotBase):
         output += "|" + 27*'_' + "|" + '\n'
         return output
 
+    def take_damage(self, damage: int) -> bool:
+        '''
+        Reduce the HP by damage.
+        Return False if dodged, else True
+        '''
+        dodged_int = random.randint(1,100)
+        if dodged_int < self.dodge_chance:
+            return False
+        self.health -= damage
+        return True
+
+    def use_weapon(self, weapon: str) -> int:
+        '''
+        Reduce the energy and calculate miss.
+        Return 0 if missed, else damage value.
+        '''
+        energy_cost = WEAPONS[weapon]
+        self.energy -= energy_cost
+        miss_int = random.randint(1,100)
+        if miss_int < self.miss_chance:
+            return 0
+        return energy_cost
+
 
 class RobotManager:
     '''
@@ -63,6 +99,7 @@ class RobotManager:
         with open(PATH_TO_BUILDS, 'r') as builds_file:
             self.builds: Dict[str, Dict[str, Union[str, int, List[str]]]]
             self.builds = json.load(builds_file)
+        self.blank_build = Robot(BLANK_BUILD)
     
     def get_all_build_names(self) -> Tuple[str,...]:
         '''

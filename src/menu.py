@@ -66,7 +66,6 @@ class MainMenu:
         if action == 'battle':
             clear_console()
             self.pit.intro()
-            exit(0) # DEBUG
         return action
             
 
