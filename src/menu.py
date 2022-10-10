@@ -2,7 +2,7 @@ from typing import Dict
 from time import sleep
 
 from src.pit import ThePit
-from src.users import User
+from src.users import User, UserManager
 from src.utils import clear_console
 
 class MainMenu:
