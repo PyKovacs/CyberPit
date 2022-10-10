@@ -1,9 +1,14 @@
-from typing import List, Union
+from __future__ import annotations
+from abc import ABC
+from typing import List, Tuple, Union, Dict
 from dataclasses import dataclass
 from time import sleep
 
-@dataclass
-class Robot:
+import json
+
+PATH_TO_BUILDS = 'data/builds.json'
+
+class RobotBase(ABC):
     name: str
     health: int
     energy: int
@@ -11,6 +16,12 @@ class Robot:
     miss_chance: int
     desc: str
     cost: int
+
+class Robot(RobotBase):
+
+    def __init__(self, init_data: Dict[str, Union[str, int]]) -> None:
+        for attr, value in init_data.items():
+            setattr(self, attr, value)
 
     def __str__(self) -> str:
         '''
@@ -32,69 +43,45 @@ class Robot:
         return output
 
 
-class RobotBuilds:      # TODO consider factory design pattern
+class RobotManager:
     '''
-    Contains all builds of robots + helper methods.
+    Managing the actions around robots.
     '''
 
-    Heavy = Robot(
-        name = 'Heavy',
-        desc='Heavy tank, increased HP.',
-        health=30,
-        energy=20,
-        dodge_chance=5,
-        miss_chance=5,
-        cost=300
-    )
+    def __init__(self) -> None:
+        with open(PATH_TO_BUILDS, 'r') as builds_file:
+            self.builds: Dict[str, Dict[str, Union[str, int]]]
+            self.builds = json.load(builds_file)
+    
+    def get_all_build_names(self) -> Tuple[str,...]:
+        '''
+        Returns Dict of all robot builds with attributes.
+        '''
+        return tuple(self.builds.keys())
 
-    Light = Robot(
-        name = 'Light',
-        desc='Lower HP, good at dodging.',
-        health=15,
-        energy=20,
-        dodge_chance=20,
-        miss_chance=5,
-        cost=250
-    )
+    def get_build_data(self, build_name: str) -> Dict[str, Union[str, int]]:
+        '''
+        Returns Dict of robot build attributes.
+        '''
+        try:
+            return self.builds[build_name]
+        except KeyError:
+            print(f'Failed to get build attributes.', 
+            'Build name {build_name} not found!',
+            sep='\n')
+            exit(1)
 
-    Expensive = Robot(
-        name = 'Expensive',
-        desc='The one you cannot afford.',
-        health=100,
-        energy=100,
-        dodge_chance=15,
-        miss_chance=1,
-        cost=5000
-    )
-
-    @classmethod
-    def _showcase(cls) -> str:
+    def showcase(self) -> str:
         '''
         Returns list of all builds with all attributes listed.
         '''
         showcase = ''
-        for build_name in cls._get_all_names():
-            build = cls.__dict__[build_name]
+        for build_data in self.builds.values():
+            build = Robot(build_data)
             showcase += str(build) + '\n'
         return showcase
 
-    # Helper methods
-    @classmethod
-    def _get_all_names(cls) -> List[str]:
-        '''
-        Returns all available build names (not objects).
-        '''
-        return [build for build in dir(cls) if not build.startswith('_')]
-
-    @classmethod
-    def _get_build_obj(cls, build_name: str) -> Robot:
-        '''
-        Providing a build name str returns build object.
-        '''
-        return cls.__dict__[build_name]
-
-    @classmethod
-    def _robot_shop(cls, balance: str) -> Union[str, Robot]:
+    def robot_shop(self, balance: str) -> Union[str, Robot]:
         '''
         Prints welcome msg, available robot builds and prompts
         for selection. 
@@ -102,8 +89,8 @@ class RobotBuilds:      # TODO consider factory design pattern
         '''
         print('*** WELCOME TO TO ROBOT SHOP ***',
               'Please, have a look on the finest selection.',
-              balance, cls._showcase(), sep='\n')
-        builds = tuple(cls._get_all_names())
+              balance, self.showcase(), sep='\n')
+        builds = self.get_all_build_names()
         print('Select a robot you wish to buy.',
                builds, '(type "cancel" to return to main menu)', 
                sep='\n')
@@ -114,5 +101,5 @@ class RobotBuilds:      # TODO consider factory design pattern
             print(f'"{build_name}" is not valid robot build.')
             sleep(2)
             return ""
-        return cls._get_build_obj(build_name)
+        return Robot(self.get_build_data(build_name))
         

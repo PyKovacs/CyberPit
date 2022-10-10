@@ -1,12 +1,12 @@
 
 from dataclasses import dataclass
 from getpass import getpass
-from typing import Tuple, Optional
-import bcrypt
+from typing import Optional
+import bcrypt   # type: ignore
 from time import sleep
 
 from src.db import DBHandler
-from src.robots import RobotBuilds, Robot
+from src.robots import RobotManager, Robot
 from src.utils import clear_console
 
 
@@ -16,6 +16,21 @@ class User:
     db_handle: DBHandler
     robot: Optional[Robot] = None
     balance: int = 0
+
+    @staticmethod
+    def _init_from_dict(dict, db_handle: DBHandler, robot: Robot) -> 'User':
+        '''
+        Reads the dictionary (provided by DB) and instantiate a user
+        based on dict values.
+        '''
+        try:
+            return User(dict['name'], 
+                        db_handle, 
+                        robot, 
+                        dict['balance'])
+        except KeyError:
+            print('Failed to initiate a user from dictionary')
+            exit(2)
     
     def set_balance(self, balance: int, show: bool = True) -> None:
         '''
@@ -76,7 +91,7 @@ class User:
         pays for the robot and set the robot to the user.
         '''
         while True:
-            shop_output = RobotBuilds._robot_shop(self.get_balance())
+            shop_output = RobotManager().robot_shop(self.get_balance())
             if shop_output == 'cancel':
                 return
             if isinstance(shop_output, Robot):
@@ -86,18 +101,6 @@ class User:
             sleep(2)
             clear_console()
             continue
-
-    @staticmethod
-    def _init_from_dict(dict, db_handle: DBHandler) -> 'User':
-        '''
-        Reads the dictionary (provided by DB) and instantiate a user
-        based on dict values.
-        '''
-        try:
-            return User(dict['name'], db_handle, RobotBuilds._get_build_obj(dict['robot']), dict['balance'])
-        except KeyError:
-            print('Failed to initiate a user from dictionary')
-            exit(2)
 
 
 class PwdManager:
@@ -132,9 +135,10 @@ class PwdManager:
 
 
 class UserManager:
-    def __init__(self, db_handler: DBHandler, pwd_manager: PwdManager) -> None:
+    def __init__(self, db_handler: DBHandler, pwd_manager: PwdManager, robot_manager: RobotManager) -> None:
         self.db_handle = db_handler
         self.pwd_manager = pwd_manager
+        self.robot_manager = robot_manager
 
     def read_username(self) -> User:
         '''
@@ -187,7 +191,9 @@ class UserManager:
         print('<-- ACCESS GRANTED -->')
         sleep(1)
         user_data = self.db_handle.get_user_data(username)
-        user = User._init_from_dict(user_data, self.db_handle)
+        user = User._init_from_dict(user_data, 
+            self.db_handle, 
+            Robot(self.robot_manager.get_build_data(user_data['robot'])))
         return user
 
     def new_user_procedure(self, user: User) -> None:
