@@ -29,7 +29,7 @@ class RobotBase(ABC):
 
 class Robot(RobotBase):
 
-    def __init__(self, init_data: Dict[str, Union[str, int]]) -> None:
+    def __init__(self, init_data: Dict[str, Union[str, int, List[str]]]) -> None:
         for attr, value in init_data.items():
             setattr(self, attr, value)
 
@@ -61,7 +61,7 @@ class RobotManager:
 
     def __init__(self) -> None:
         with open(PATH_TO_BUILDS, 'r') as builds_file:
-            self.builds: Dict[str, Dict[str, Union[str, int]]]
+            self.builds: Dict[str, Dict[str, Union[str, int, List[str]]]]
             self.builds = json.load(builds_file)
     
     def get_all_build_names(self) -> Tuple[str,...]:
@@ -70,7 +70,7 @@ class RobotManager:
         '''
         return tuple(self.builds.keys())
 
-    def get_build_data(self, build_name: str) -> Dict[str, Union[str, int]]:
+    def get_build_data(self, build_name: str) -> Dict[str, Union[str, int, List[str]]]:
         '''
         Returns Dict of robot build attributes.
         '''
