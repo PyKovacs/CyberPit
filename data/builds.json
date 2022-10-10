@@ -1,0 +1,29 @@
+{
+    "Heavy": {
+        "name": "Heavy",
+        "desc": "Heavy tank, increased HP.",
+        "health": 30,
+        "energy": 20,
+        "dodge_chance": 5,
+        "miss_chance": 5,
+        "cost": 300
+    },
+    "Light": {
+        "name": "Light",
+        "desc": "Lower HP, good at dodging.",
+        "health": 15,
+        "energy": 20,
+        "dodge_chance": 20,
+        "miss_chance": 5,
+        "cost": 250
+    },
+    "Expensive": {
+        "name": "Expensive",
+        "desc": "The one you cannot afford.",
+        "health": 100,
+        "energy": 100,
+        "dodge_chance": 15,
+        "miss_chance": 1,
+        "cost": 5000
+    }
+}
