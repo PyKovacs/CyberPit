@@ -59,7 +59,7 @@ class User:
         Assigns robot to a user. Writes to DB.
         '''
         self.robot = robot
-        self.db_handle.update_robot(self.name, self.robot.name)
+        self.db_handle.update_robot(self.name, self.robot.build, self.robot.name)
 
     def get_btc(self, amount: int) -> None:
         '''
@@ -149,6 +149,7 @@ class UserManager:
                             'otherwise press Enter to create a user:\n')
             if not username:
                 self.current_user = self.create_new_user()
+                return self.current_user
             if not self.db_handle.user_exists(username):
                 print(f'User with name "{username}" does not exist.\n')
                 sleep(.5)
@@ -193,7 +194,7 @@ class UserManager:
         user_data = self.db_handle.get_user_data(username)
         user = User._init_from_dict(user_data, 
             self.db_handle, 
-            Robot(self.robot_manager.get_build_data(user_data['robot'])))
+            Robot(user_data['robot_name'], self.robot_manager.get_build_data(user_data['robot'])))
         return user
 
     def new_user_procedure(self, user: User) -> None:

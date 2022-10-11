@@ -19,6 +19,7 @@ WEAPONS = {
 BLANK_BUILD: Dict[str, Union[str, int, List[str]]]
 BLANK_BUILD = {
         "name": "",
+        "build": "",
         "desc": "",
         "weapons": [],
         "health": 0,
@@ -32,6 +33,7 @@ PATH_TO_BUILDS = 'data/builds.json'
 
 class RobotBase(ABC):
     name: str
+    build: str
     health: int
     energy: int
     dodge_chance: int
@@ -42,7 +44,8 @@ class RobotBase(ABC):
 
 class Robot(RobotBase):
 
-    def __init__(self, init_data: Dict[str, Union[str, int, List[str]]]) -> None:
+    def __init__(self, name, init_data: Dict[str, Union[str, int, List[str]]]) -> None:
+        self.name = name
         for attr, value in init_data.items():
             setattr(self, attr, value)
 
@@ -99,7 +102,7 @@ class RobotManager:
         with open(PATH_TO_BUILDS, 'r') as builds_file:
             self.builds: Dict[str, Dict[str, Union[str, int, List[str]]]]
             self.builds = json.load(builds_file)
-        self.blank_build = Robot(BLANK_BUILD)
+        self.blank_build = Robot("", BLANK_BUILD)
     
     def get_all_build_names(self) -> Tuple[str,...]:
         '''
@@ -125,7 +128,7 @@ class RobotManager:
         '''
         showcase = ''
         for build_data in self.builds.values():
-            build = Robot(build_data)
+            build = Robot(build_data['build'], build_data)
             showcase += str(build) + '\n'
         return showcase
 
@@ -149,4 +152,5 @@ class RobotManager:
             print(f'"{build_name}" is not valid robot build.')
             sleep(2)
             return ""
-        return Robot(self.get_build_data(build_name))
+        name = input('Name your new robot: ')
+        return Robot(name, self.get_build_data(build_name))

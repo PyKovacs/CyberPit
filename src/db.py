@@ -25,28 +25,29 @@ class DBHandler:
         Creates table with predefined collumns in sqlite db.
         '''
         self.conn.execute(f'CREATE TABLE {table_name} (name TEXT PRIMARY KEY NOT NULL, '
-                          'pwd BLOB NOT NULL, robot TEXT, balance INT);')
+                          'pwd BLOB NOT NULL, robot TEXT, robot_name TEXT, balance INT);')
         self.conn.commit()
         return self.table_exists(table_name)
 
-    def create_user(self, name: str, passwd: str, robot: str = '', balance: int = 0, table: str = USER_TABLE) -> None:
+    def create_user(self, name: str, passwd: str, robot: str = '', robot_name: str = '', balance: int = 0, table: str = USER_TABLE) -> None:
         '''
         Creates user row with provided values.
         '''
         try:
-            self.conn.execute(f"INSERT INTO {table} VALUES ((?),(?),(?),(?))", (name, passwd, robot, balance))
+            self.conn.execute(f"INSERT INTO {table} VALUES ((?),(?),(?),(?),(?))", (name, passwd, robot, robot_name, balance))
             self.conn.commit()
         except (sqlite3.IntegrityError, sqlite3.OperationalError) as emsg:
             print('ERROR: Crashed while creating user entry.')
             print(emsg)
             exit(5)
 
-    def update_robot(self, user: str, robot: str, table: str = USER_TABLE) -> None:
+    def update_robot(self, user: str, robot: str, robot_name: str, table: str = USER_TABLE) -> None:
         '''
         Updates the robot value for specific user.
         '''
         try:
             self.conn.execute(f"UPDATE {table} SET robot = '{robot}' WHERE name = '{user}'")
+            self.conn.execute(f"UPDATE {table} SET robot_name = '{robot_name}' WHERE name = '{user}'")
             self.conn.commit()
         except Exception as emsg:
             print('ERROR: Crashed while updating user entry.')
@@ -69,7 +70,7 @@ class DBHandler:
         '''
         Returns dict of user data from users table.
         '''
-        columns = ['name', 'robot', 'balance']
+        columns = ['name', 'robot', 'robot_name', 'balance']
         cursor = self.conn.execute(f"SELECT {', '.join(columns)} from {table} where name='{username}'")
         row = cursor.fetchall()
         data = {}

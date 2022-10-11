@@ -1,6 +1,6 @@
 {
     "Heavy": {
-        "name": "Heavy",
+        "build": "Heavy",
         "desc": "Heavy tank, increased HP.",
         "weapons": ["laser", "bumper", "flipper"],
         "health": 30,
@@ -10,7 +10,7 @@
         "cost": 300
     },
     "Light": {
-        "name": "Light",
+        "build": "Light",
         "desc": "Lower HP, good at dodging.",
         "weapons": ["laser", "spike", "saw"],
         "health": 15,
@@ -20,7 +20,7 @@
         "cost": 250
     },
     "Expensive": {
-        "name": "Expensive",
+        "build": "Expensive",
         "desc": "The one you cannot afford.",
         "weapons": ["flame_thrower", "plasma_gun", "saw"],
         "health": 100,
