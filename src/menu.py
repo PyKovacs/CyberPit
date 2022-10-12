@@ -1,10 +1,16 @@
 from typing import Dict
 from time import sleep
 
-from src.users import User
+from src.pit import ThePit
+from src.users import User, UserManager
 from src.utils import clear_console
 
 class MainMenu:
+
+    def __init__(self, user: User, pit: ThePit) -> None:
+        self.user = user
+        self.pit = pit
+
 
     def get_menu_options(self) -> Dict[str, str]:
         '''
@@ -26,7 +32,7 @@ class MainMenu:
         menu += f'\n{"":#^20}'
         return menu
 
-    def present_menu(self, user: User) -> None:
+    def present_menu(self) -> None:
         '''
         Presents the main menu
         '''
@@ -34,21 +40,21 @@ class MainMenu:
         while True:
             clear_console()
             print('----------------------------')
-            print(user.name.upper())
-            if user.robot:
+            print(self.user.name.upper())
+            if self.user.robot:
                 if details:
-                    print(user.robot)
+                    print(self.user.robot)
                 else:
-                    print(f'Your current robot: {user.robot.name}')
+                    print(f'Your current robot: {self.user.robot.name}')
             else:
                 print('You don\'t have any robot yet.')
-            print('Your balance: ' + user.get_balance(full=False))
+            print('Your balance: ' + self.user.get_balance(full=False))
             print(self.get_menu())
             details = False
-            if self.execute_option(user) == 'robot':
+            if self.execute_option() == 'robot':
                 details = True
     
-    def execute_option(self, user: User) -> str:
+    def execute_option(self) -> str:
         print('\nPick your action.')
         print(tuple(self.get_menu_options().keys()))
         action = input('').lower()
@@ -56,10 +62,10 @@ class MainMenu:
             exit(0)
         if action == 'shop':
             clear_console()
-            user.buy_robot()
+            self.user.buy_robot()
         if action == 'battle':
-            print('Sorry, still in construction...')
-            sleep(2)
+            clear_console()
+            self.pit.intro()
         return action
             
 

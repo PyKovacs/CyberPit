@@ -33,6 +33,15 @@ def clear_console() -> None:
     elif os.name == 'nt':
         os.system('cls')
 
+def delayed_typing(text: str, sleep_interval: float = 0.05) -> None:
+    '''
+    Print the text with sleep between characters.
+    '''
+    for char in text:
+        print(char, end="", flush=True)
+        sleep(sleep_interval)
+    print()
+
 def theme() -> None:
     '''
     Theme show at the beginning of the game.
@@ -42,7 +51,8 @@ def theme() -> None:
     for line in THEME_TITLE:
         for char in line:
             if char == 'b':
-                 sleep_time = 0.2
+                sleep(0.5)
+                sleep_time = 0.1
             print(char, end="", flush=True)
             sleep(sleep_time)
         sleep_time /= 1.15

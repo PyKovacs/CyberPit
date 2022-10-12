@@ -14,7 +14,7 @@ from src.utils import clear_console
 class User:
     name: str
     db_handle: DBHandler
-    robot: Optional[Robot] = None
+    robot: Robot = RobotManager().blank_build
     balance: int = 0
 
     @staticmethod
@@ -59,8 +59,7 @@ class User:
         Assigns robot to a user. Writes to DB.
         '''
         self.robot = robot
-        assert self.robot is not None
-        self.db_handle.update_robot(self.name, self.robot.name)
+        self.db_handle.update_robot(self.name, self.robot.build, self.robot.name)
 
     def get_btc(self, amount: int) -> None:
         '''
@@ -149,12 +148,14 @@ class UserManager:
             username = input('If you have a user, enter you username, '
                             'otherwise press Enter to create a user:\n')
             if not username:
-                return self.create_new_user()
+                self.current_user = self.create_new_user()
+                return self.current_user
             if not self.db_handle.user_exists(username):
                 print(f'User with name "{username}" does not exist.\n')
                 sleep(.5)
                 continue
-            return self.load_existing_user(username)
+            self.current_user = self.load_existing_user(username)
+            return self.current_user
             
     def create_new_user(self) -> User:
         '''
@@ -193,7 +194,7 @@ class UserManager:
         user_data = self.db_handle.get_user_data(username)
         user = User._init_from_dict(user_data, 
             self.db_handle, 
-            Robot(self.robot_manager.get_build_data(user_data['robot'])))
+            Robot(user_data['robot_name'], self.robot_manager.get_build_data(user_data['robot'])))
         return user
 
     def new_user_procedure(self, user: User) -> None:
