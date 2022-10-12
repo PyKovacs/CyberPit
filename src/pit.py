@@ -16,7 +16,7 @@ class ThePit:
 
     def intro(self):
         print('Ready for the fight?\n')
-        sleep(2)
+        sleep(.5)
         self.opponent_robot = self.assign_opponent()
         self.opp_name = self._random_name()
         print(f'You stand against {self.opp_name}.')
@@ -24,13 +24,16 @@ class ThePit:
         self.opponent_robot.name = self.opp_name
         sleep(1)
         print('Last chance to give up.',
-                'Type "coward" to go back to main menu.',
-                'Any other key hit will throw you to the pit.',
+                'Type "flee" to go back to main menu.',
+                'Typing "fight"  will throw you to the pit.',
                 sep='\n')
-        if input('') == 'coward':
-            return
-        self.fight()
-            
+        while True:
+            f_or_f = input('Flight or fight? ')
+            if f_or_f == 'flee':
+                return
+            if f_or_f == 'fight':
+                self.fight()
+                break
 
     def assign_opponent(self) -> Robot:
         opp_build = random.choice(self.robot_manager.get_all_build_names())
@@ -51,8 +54,8 @@ class ThePit:
                 break
             self.round(round_count)
             round_count += 1
-        
-        
+        self.player_robot.reset(self.robot_manager)
+        input('\nPress any key to continue to main menu...')        
 
     def pit_talk(self):
         delayed_typing('LAAAAADIEEEES AND GENTLEMEEEEEN...')
@@ -61,17 +64,18 @@ class ThePit:
         sleep(0.2)
         delayed_typing('A place where metal meets metal in the MOST BRUUUUTAL ROOBOOOT FIIIGTHS!')
         sleep(0.5)
-        delayed_typing('Hang tight, as TONIIIGHT you will experience the clash of titans.')
         delayed_typing(f'Tonight, {self.player_robot.name} will confront {self.opponent_robot.name} in unprecedented cyber dance.\n')
-        sleep(2)
+        sleep(1)
         delayed_typing(f'LET THE SHOOOOOOOW BEGIIIIIIIINNN !!!!', 0.08)
         sleep(2)
+        clear_console()
     
     def round(self, round_count):
         print(f'-------- ROUND {round_count} --------')
         for playing_robot in (self.player_robot, self.opponent_robot):
             energy_needed=min([energy for weapon, energy in WEAPONS.items() if weapon in playing_robot.weapons])
-            if not playing_robot.energy > energy_needed:
+            print('energy needed: ', energy_needed)
+            if not playing_robot.energy >= energy_needed:
                 delayed_typing(f' -> {playing_robot.name} is out of energy.')
                 self.exhausted.add(playing_robot)
                 continue
@@ -80,6 +84,7 @@ class ThePit:
             else:                
                 self.opponent_turn()
         print(f'------------------------------------')
+        sleep(2)
 
     def player_turn(self):
         print(f'\nYour weapons: {self.player.robot.weapons}')
@@ -95,26 +100,29 @@ class ThePit:
             if action == 'enemy':
                 print(self.opponent_robot)
             if action in self.player.robot.weapons:
-                self.attack(action, self.player_robot, self.opponent_robot)
-                break
+                if self.attack(action, self.player_robot, self.opponent_robot):
+                    break
 
     def opponent_turn(self):
-            weapon = random.choice(self.opponent_robot.weapons)
+            weapon = random.choice([weapon for weapon in self.opponent_robot.weapons if self.opponent_robot.energy >= WEAPONS[weapon]])
             self.attack(weapon, self.opponent_robot, self.player_robot)
 
-    def attack(self, weapon: str, attacking: Robot, attacked: Robot):
+    def attack(self, weapon: str, attacking: Robot, attacked: Robot) -> bool:
+        damage_points = attacking.use_weapon(weapon)
+        if damage_points == -1:
+            delayed_typing(f'  -> not enough energy...')
+            return False
         delayed_typing(f' -> {attacking.name} loading {weapon} ...')
         sleep(1)
-        damage_points = attacking.use_weapon(weapon)
         if not damage_points:
-            print(f'  -> {attacking.name} missed !!!')
-            return
+            delayed_typing(f'  -> {attacking.name} missed !!!')
+            return True
         hit = attacked.take_damage(damage_points)
         if not hit:
-            print(f'  -> {attacked.name} dodged !!!')
-            return
-        print(f'  -> {attacked.name} took {damage_points} points of damage !!!')
-        return
+            delayed_typing(f'  -> {attacked.name} dodged !!!')
+            return True
+        delayed_typing(f'  -> {attacked.name} took {damage_points} points of damage !!!')
+        return True
 
     def announce_winner(self, evaluated_win):
         if evaluated_win is None:
@@ -144,7 +152,6 @@ class ThePit:
             return True
         else:
             return None
-
 
     def _random_name(self):
         first = random.choice(string.ascii_letters)

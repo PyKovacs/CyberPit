@@ -51,7 +51,8 @@ def theme() -> None:
     for line in THEME_TITLE:
         for char in line:
             if char == 'b':
-                 sleep_time = 0.2
+                sleep(0.5)
+                sleep_time = 0.1
             print(char, end="", flush=True)
             sleep(sleep_time)
         sleep_time /= 1.15

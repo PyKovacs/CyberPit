@@ -83,14 +83,25 @@ class Robot(RobotBase):
     def use_weapon(self, weapon: str) -> int:
         '''
         Reduce the energy and calculate miss.
-        Return 0 if missed, else damage value.
+        Return -1 if not enough energy, 0 if missed, else damage value.
         '''
         energy_cost = WEAPONS[weapon]
+        if self.energy < energy_cost:
+            return -1
         self.energy -= energy_cost
         miss_int = random.randint(1,100)
         if miss_int < self.miss_chance:
             return 0
         return energy_cost
+
+    def reset(self, robot_manager: RobotManager) -> None:
+        '''
+        Resets the energy and health.
+        '''
+        build_data = robot_manager.get_build_data(self.build)
+        assert isinstance(build_data['health'], int)
+        assert isinstance(build_data['energy'], int)
+        self.health, self.energy = build_data['health'], build_data['energy']
 
 
 class RobotManager:
