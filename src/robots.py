@@ -80,6 +80,12 @@ class Robot(RobotBase):
         self.health -= damage
         return True
 
+    def get_weapon_energy(self, weapon) -> int:
+        '''
+        Return energy and damage points of provided weapon.
+        '''
+        return WEAPONS.get(weapon, 0)
+
     def use_weapon(self, weapon: str) -> int:
         '''
         Reduce the energy and calculate miss.
@@ -93,6 +99,15 @@ class Robot(RobotBase):
         if miss_int < self.miss_chance:
             return 0
         return energy_cost
+
+    def is_exhausted(self) -> bool:
+        '''
+        Returns False if robot has no energy left for using any weapon
+        '''
+        energy_needed=min([energy for weapon, energy in WEAPONS.items() if weapon in self.weapons])
+        if self.energy >= energy_needed:
+            return False
+        return True
 
     def reset(self, robot_manager: RobotManager) -> None:
         '''
