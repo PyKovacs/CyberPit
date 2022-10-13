@@ -8,8 +8,9 @@ from src.utils import clear_console
 
 class MainMenu:
 
-    def __init__(self, user: User) -> None:
+    def __init__(self, user: User, robot_manager = RobotManager) -> None:
         self.user = user
+        self.robot_manager = robot_manager
 
     def get_menu_options(self) -> Dict[str, str]:
         '''
@@ -64,7 +65,7 @@ class MainMenu:
             self.user.buy_robot()
         if action == 'battle':
             clear_console()
-            pit.run(self.user, RobotManager())
+            pit.run(self.user, self.robot_manager.generate_robot())
         return action
             
 

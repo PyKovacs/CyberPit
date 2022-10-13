@@ -2,7 +2,6 @@
 from dataclasses import dataclass
 from getpass import getpass
 from time import sleep
-from typing import Optional
 
 import bcrypt  # type: ignore
 

@@ -14,7 +14,7 @@ class Game:
                                 self.pwd_manager, 
                                 self.robot_manager)
         self.user = self.user_manager.read_username()
-        self.main_menu = MainMenu(self.user)
+        self.main_menu = MainMenu(self.user, self.robot_manager)
         theme()
     
     def run(self):

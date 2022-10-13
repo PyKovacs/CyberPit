@@ -1,30 +1,22 @@
 import random
-import string
 from abc import ABC, abstractmethod
 from time import sleep
 from typing import Optional
 
-from src.robots import Robot, RobotManager
+from src.robots import Robot
 from src.users import User
 from src.utils import clear_console, delayed_typing
 
 
 class Opponent:
-    def __init__(self, robot_manager: RobotManager) -> None:
-        self.robot = self.generate_opponent(robot_manager)
-        self.accepted = self.challenge()
+    def __init__(self, robot: Robot) -> None:
+        self.robot = robot
 
-    def generate_opponent(self, robot_manager: RobotManager) -> Robot:
+    def accepted(self) -> bool:
         print('Ready for the fight?\n')
         sleep(.5)
-        opp_build = random.choice(robot_manager.get_all_build_names())
-        robot = Robot(opp_build, robot_manager.get_build_data(opp_build))
-        robot.name = self.random_name()
-        print(f'You stand against {robot.name}.')
-        print(robot)
-        return robot
-
-    def challenge(self) -> bool:
+        print(f'You stand against {self.robot.name}.')
+        print(self.robot)
         print('Last chance to give up.',
               'Type "flee" to go back to main menu.',
               'or "fight" to continue to the pit.',
@@ -36,25 +28,17 @@ class Opponent:
             if f_or_f == 'fight':
                 return True
 
-    def random_name(self) -> str:
-        first = random.choice(string.ascii_letters)
-        second = random.choice(string.ascii_letters)
-        num = random.randint(100, 999)
-        return f'{first}{second}-{num}'
-
 
 class Fight:
     def __init__(
             self,
             player: User,
             opponent: Opponent,
-            outcome: 'Outcome',
             round_runner: 'RoundRunner'
             ):
 
         self.player = player
         self.opponent = opponent
-        self.outcome = outcome
         self.round_runner = round_runner
         self.welcome_sequence()
 
@@ -72,18 +56,14 @@ class Fight:
         sleep(2)
         clear_console()
 
-    def start(self):
+    def has_winner(self) -> bool:
         clear_console()
         round_count = 1
         while True:
             if self.player.robot.health <= 0 or self.opponent.robot.health <= 0:
-                # match finished
-                self.outcome.announce_winner(self.outcome.player_won())
-                break
+                return True
             if self.player.robot.is_exhausted() and self.opponent.robot.is_exhausted():
-                # match finished
-                self.outcome.exhausted_outcome()
-                break
+                return False
             self.round_runner.start_round(round_count, self.player, self.opponent)
             round_count += 1
 
@@ -96,7 +76,7 @@ class RoundRunner:
         print(f'-------- ROUND {round_count} --------')
         self.start_turn(PlayersTurn(player, opponent))
         self.start_turn(OpponentsTurn(player, opponent))
-        print(f'------------------------------------')
+        print('------------------------------------')
 
 
 class Turns(ABC):
@@ -108,33 +88,35 @@ class Turns(ABC):
     def execute(self):
         pass
 
-    def energy_check(self, robot: Robot) -> bool:
+    def status_check(self, robot: Robot) -> bool:
         if robot.is_exhausted():
             delayed_typing(f' -> {robot.name} is out of energy.')
+            return False
+        if robot.health <= 0:
             return False
         return True
 
     def attack(self, weapon: str, attacking: Robot, attacked: Robot) -> bool:
-        damage_points = attacking.use_weapon(weapon)
-        if damage_points == -1:
+        weapon_energy = attacking.use_weapon(weapon)
+        if weapon_energy == -1:
             delayed_typing('  -> not enough energy...')
             return False
         delayed_typing(f' -> {attacking.name} loading {weapon} ...')
         sleep(1)
-        if not damage_points:
+        if not weapon_energy:
             delayed_typing(f'  -> {attacking.name} missed !!!')
             return True
-        hit = attacked.take_damage(damage_points)
+        hit = attacked.take_damage(weapon_energy)
         if not hit:
             delayed_typing(f'  -> {attacked.name} dodged !!!')
             return True
-        delayed_typing(f'  -> {attacked.name} took {damage_points} points of damage !!!')
+        delayed_typing(f'  -> {attacked.name} took {weapon_energy} points of damage !!!')
         return True
 
 
 class PlayersTurn(Turns):
     def execute(self) -> None:
-        if not self.energy_check(self.player.robot):
+        if not self.status_check(self.player.robot):
             return
         print(f'\nYour weapons: {self.player.robot.weapons}')
         print('You have following options:\n',
@@ -155,7 +137,7 @@ class PlayersTurn(Turns):
 
 class OpponentsTurn(Turns):
     def execute(self):
-        if not self.energy_check(self.opponent.robot):
+        if not self.status_check(self.opponent.robot):
             return
         weapons_available = [weapon for weapon in self.opponent.robot.weapons
                              if self.opponent.robot.energy
@@ -164,23 +146,19 @@ class OpponentsTurn(Turns):
         self.attack(weapon, self.opponent.robot, self.player.robot)
 
 
-class Outcome:
+class OutcomeEval:
     def __init__(self, player_robot: Robot, opponent_robot: Robot):
         self.player_robot = player_robot
         self.opponent_robot = opponent_robot
 
-    def announce_winner(self, player_won):
-        if player_won is None:
-            delayed_typing('Unbelievable! Its a draw!')
-            sleep(2)
-            return
+    def announce_winner(self):
         delayed_typing('Aaaand the winner iiiiiiis.....')
-        if player_won:
-            delayed_typing(self.player_robot.name)
+        sleep(.5)
+        if self.player_won():
+            delayed_typing(f'\n  === {self.player_robot.name.upper()} ===')
         else:
-            delayed_typing(self.opponent_robot.name)
+            delayed_typing(f'\n  === {self.opponent_robot.name.upper()} ===')
         sleep(1)
-        return
 
     def exhausted_outcome(self):
         delayed_typing('Oh no! Both bots are out of energy and are unable to continue.')
@@ -193,16 +171,18 @@ class Outcome:
         '''
         if self.opponent_robot.health > self.player_robot.health:
             return False
-        elif self.opponent_robot.health < self.player_robot.health:
-            return True
         else:
-            return None
+            return True
 
 
-def run(user: User, robot_manager: RobotManager):
-    opponent = Opponent(robot_manager)
-    if opponent.accepted:
-        fight = Fight(user, opponent, Outcome(user.robot, opponent.robot), RoundRunner())
-        fight.start()
-        user.robot.reset(robot_manager)
+def run(user: User, generated_robot: Robot):
+    opponent = Opponent(generated_robot)
+    outcome = OutcomeEval(user.robot, opponent.robot)
+    if opponent.accepted():
+        fight = Fight(user, opponent, RoundRunner())
+        if fight.has_winner():
+            outcome.announce_winner()
+        else:
+            outcome.exhausted_outcome()
+        user.robot.reset()
         input('\nPress any key to continue to main menu...')
