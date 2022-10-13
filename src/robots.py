@@ -1,10 +1,10 @@
 from __future__ import annotations
-from abc import ABC
-from typing import List, Tuple, Union, Dict
-from time import sleep
 
-import random
 import json
+import random
+from abc import ABC
+from time import sleep
+from typing import Dict, List, Tuple, Union
 
 WEAPONS = {
     'laser': 6,

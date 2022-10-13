@@ -1,12 +1,13 @@
 
 from dataclasses import dataclass
 from getpass import getpass
-from typing import Optional
-import bcrypt   # type: ignore
 from time import sleep
+from typing import Optional
+
+import bcrypt  # type: ignore
 
 from src.db import DBHandler
-from src.robots import RobotManager, Robot
+from src.robots import Robot, RobotManager
 from src.utils import clear_console
 
 

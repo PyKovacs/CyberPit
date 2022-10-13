@@ -1,11 +1,12 @@
-from time import sleep
 import random
 import string
+from time import sleep
 from typing import Optional
 
-from src.robots import Robot, RobotManager, WEAPONS
+from src.robots import WEAPONS, Robot, RobotManager
 from src.users import UserManager
 from src.utils import clear_console, delayed_typing
+
 
 class ThePit:
     def __init__(self, robot_manager: RobotManager, user_manager: UserManager):
