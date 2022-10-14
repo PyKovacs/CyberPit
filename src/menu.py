@@ -1,16 +1,16 @@
 from typing import Dict
-from time import sleep
 
-from src.pit import ThePit
-from src.users import User, UserManager
+import src.pit as pit
+from src.robots import RobotManager
+from src.users import User
 from src.utils import clear_console
+
 
 class MainMenu:
 
-    def __init__(self, user: User, pit: ThePit) -> None:
+    def __init__(self, user: User, robot_manager = RobotManager) -> None:
         self.user = user
-        self.pit = pit
-
+        self.robot_manager = robot_manager
 
     def get_menu_options(self) -> Dict[str, str]:
         '''
@@ -65,7 +65,7 @@ class MainMenu:
             self.user.buy_robot()
         if action == 'battle':
             clear_console()
-            self.pit.intro()
+            pit.run(self.user, self.robot_manager.generate_robot())
         return action
             
 

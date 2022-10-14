@@ -1,6 +1,6 @@
 import os
-from typing import Tuple
 from time import sleep
+from typing import Tuple
 
 THEME_TITLE: Tuple = (
 '##########################################################',

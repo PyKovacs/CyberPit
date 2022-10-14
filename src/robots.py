@@ -1,10 +1,11 @@
 from __future__ import annotations
-from abc import ABC
-from typing import List, Tuple, Union, Dict
-from time import sleep
 
-import random
 import json
+import random
+import string
+from abc import ABC
+from time import sleep
+from typing import Dict, List, Tuple, Union
 
 WEAPONS = {
     'laser': 6,
@@ -46,7 +47,8 @@ class Robot(RobotBase):
 
     def __init__(self, name, init_data: Dict[str, Union[str, int, List[str]]]) -> None:
         self.name = name
-        for attr, value in init_data.items():
+        self._init_data = init_data
+        for attr, value in self._init_data.items():
             setattr(self, attr, value)
 
     def __str__(self) -> str:
@@ -60,11 +62,13 @@ class Robot(RobotBase):
         for param, value in self.__dict__.items():
             if param in ['name', 'desc', 'weapons']:
                 continue
+            if param.startswith('_'):
+                continue
             value = str(value)
             if param in ['dodge_chance', 'miss_chance']:
-                    value += ' %'
+                value += ' %'
             elif param == 'cost':
-                    value += ' BTC'
+                value += ' BTC'
             output += f'| {param.capitalize():<17}{value:>8} |\n'
         output += "|" + 27*'_' + "|" + '\n'
         return output
@@ -80,6 +84,12 @@ class Robot(RobotBase):
         self.health -= damage
         return True
 
+    def get_weapon_energy(self, weapon) -> int:
+        '''
+        Return energy and damage points of provided weapon.
+        '''
+        return WEAPONS.get(weapon, 0)
+
     def use_weapon(self, weapon: str) -> int:
         '''
         Reduce the energy and calculate miss.
@@ -94,14 +104,23 @@ class Robot(RobotBase):
             return 0
         return energy_cost
 
-    def reset(self, robot_manager: RobotManager) -> None:
+    def is_exhausted(self) -> bool:
+        '''
+        Returns False if robot has no energy left for using any weapon
+        '''
+        energy_needed=min([energy for weapon, energy in WEAPONS.items() if weapon in self.weapons])
+        if self.energy >= energy_needed:
+            return False
+        return True
+
+    def reset(self) -> None:
         '''
         Resets the energy and health.
         '''
-        build_data = robot_manager.get_build_data(self.build)
-        assert isinstance(build_data['health'], int)
-        assert isinstance(build_data['energy'], int)
-        self.health, self.energy = build_data['health'], build_data['energy']
+        assert isinstance(self._init_data['health'], int)
+        assert isinstance(self._init_data['energy'], int)
+        self.health = self._init_data['health']
+        self.energy = self._init_data['energy']
 
 
 class RobotManager:
@@ -132,6 +151,17 @@ class RobotManager:
             'Build name {build_name} not found!',
             sep='\n')
             exit(1)
+
+    def generate_robot(self) -> Robot:
+        robot_build = random.choice(self.get_all_build_names())
+        robot_name = self.generate_robot_name()
+        return Robot(robot_name, self.get_build_data(robot_build))
+
+    def generate_robot_name(self) -> str:
+        first = random.choice(string.ascii_letters)
+        second = random.choice(string.ascii_letters)
+        num = random.randint(100, 999)
+        return f'{first}{second}-{num}'
 
     def showcase(self) -> str:
         '''

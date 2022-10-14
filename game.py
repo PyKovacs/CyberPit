@@ -1,10 +1,8 @@
-from src.users import UserManager, PwdManager
-from src.robots import RobotManager
 from src.db import DBHandler
 from src.menu import MainMenu
-from src.pit import ThePit
+from src.robots import RobotManager
+from src.users import PwdManager, UserManager
 from src.utils import theme
-
 
 
 class Game:
@@ -16,8 +14,7 @@ class Game:
                                 self.pwd_manager, 
                                 self.robot_manager)
         self.user = self.user_manager.read_username()
-        self.pit = ThePit(self.robot_manager, self.user_manager)
-        self.main_menu = MainMenu(self.user, self.pit)
+        self.main_menu = MainMenu(self.user, self.robot_manager)
         theme()
     
     def run(self):
