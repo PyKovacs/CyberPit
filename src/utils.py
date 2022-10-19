@@ -59,4 +59,3 @@ def theme() -> None:
         print()
     sleep(3)
     clear_console()
-        

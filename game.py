@@ -10,13 +10,13 @@ class Game:
         self.db_handler = DBHandler()
         self.pwd_manager = PwdManager()
         self.robot_manager = RobotManager()
-        self.user_manager = UserManager(self.db_handler, 
-                                self.pwd_manager, 
+        self.user_manager = UserManager(self.db_handler,
+                                self.pwd_manager,
                                 self.robot_manager)
         self.user = self.user_manager.read_username()
         self.main_menu = MainMenu(self.user, self.robot_manager)
         theme()
-    
+
     def run(self):
         '''
         Game flow sequence.

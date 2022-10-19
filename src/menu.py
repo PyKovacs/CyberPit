@@ -16,9 +16,9 @@ class MainMenu:
         '''
         Returns main menu options list
         '''
-        return {'battle': 'Enter the PIT and fight!', 
-                'robot': 'Shows your robot details.', 
-                'shop': 'Enter the robot shop.', 
+        return {'battle': 'Enter the PIT and fight!',
+                'robot': 'Shows your robot details.',
+                'shop': 'Enter the robot shop.',
                 'quit': 'Exit the game.'}
 
     def get_menu(self) -> str:
@@ -34,7 +34,7 @@ class MainMenu:
 
     def present_menu(self) -> None:
         '''
-        Presents the main menu
+        Presents the main menu.
         '''
         details = False
         while True:
@@ -53,8 +53,11 @@ class MainMenu:
             details = False
             if self.execute_option() == 'robot':
                 details = True
-    
+
     def execute_option(self) -> str:
+        '''
+        Reads user input and execute option.
+        '''
         print('\nPick your action.')
         print(tuple(self.get_menu_options().keys()))
         action = input('').lower()
@@ -67,5 +70,3 @@ class MainMenu:
             clear_console()
             pit.run(self.user, self.robot_manager.generate_robot())
         return action
-            
-

@@ -133,7 +133,7 @@ class RobotManager:
             self.builds: Dict[str, Dict[str, Union[str, int, List[str]]]]
             self.builds = json.load(builds_file)
         self.blank_build = Robot("", BLANK_BUILD)
-    
+
     def get_all_build_names(self) -> Tuple[str,...]:
         '''
         Returns Dict of all robot builds with attributes.
@@ -147,17 +147,23 @@ class RobotManager:
         try:
             return self.builds[build_name]
         except KeyError:
-            print(f'Failed to get build attributes.', 
-            'Build name {build_name} not found!',
+            print('Failed to get build attributes.',
+            f'Build name {build_name} not found!',
             sep='\n')
             exit(1)
 
     def generate_robot(self) -> Robot:
+        '''
+        Generates random robot from available builds.
+        '''
         robot_build = random.choice(self.get_all_build_names())
         robot_name = self.generate_robot_name()
         return Robot(robot_name, self.get_build_data(robot_build))
 
     def generate_robot_name(self) -> str:
+        '''
+        Generates random name with 2 letters and 3 numbers in format XX-012.
+        '''
         first = random.choice(string.ascii_letters)
         second = random.choice(string.ascii_letters)
         num = random.randint(100, 999)
@@ -176,7 +182,7 @@ class RobotManager:
     def robot_shop(self, balance: str) -> Union[str, Robot]:
         '''
         Prints welcome msg, available robot builds and prompts
-        for selection. 
+        for selection.
         Returns "cancel", empty string or Robot obj.
         '''
         print('*** WELCOME TO TO ROBOT SHOP ***',
@@ -184,7 +190,7 @@ class RobotManager:
               balance, self.showcase(), sep='\n')
         builds = self.get_all_build_names()
         print('Select a robot you wish to buy.',
-               builds, '(type "cancel" to return to main menu)', 
+               builds, '(type "cancel" to return to main menu)',
                sep='\n')
         build_name = input('').capitalize()
         if build_name == 'Cancel':

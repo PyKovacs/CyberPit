@@ -1,7 +1,7 @@
-
 from dataclasses import dataclass
 from getpass import getpass
 from time import sleep
+from typing import Dict
 
 import bcrypt  # type: ignore
 
@@ -18,20 +18,20 @@ class User:
     balance: int = 0
 
     @staticmethod
-    def _init_from_dict(dict, db_handle: DBHandler, robot: Robot) -> 'User':
+    def init_from_dict(user_data: Dict[str, str], db_handle: DBHandler, robot: Robot) -> 'User':
         '''
         Reads the dictionary (provided by DB) and instantiate a user
         based on dict values.
         '''
         try:
-            return User(dict['name'], 
-                        db_handle, 
-                        robot, 
-                        dict['balance'])
+            return User(user_data['name'],
+                        db_handle,
+                        robot,
+                        int(user_data['balance']))
         except KeyError:
             print('Failed to initiate a user from dictionary')
             exit(2)
-    
+
     def set_balance(self, balance: int, show: bool = True) -> None:
         '''
         Sets user balance to provided value. Writes to DB.
@@ -53,7 +53,7 @@ class User:
         if full:
             return f'$$$ Current balance: {self.balance} BTC.'
         return f'{self.balance} BTC'
-    
+
     def set_robot(self, robot: Robot) -> None:
         '''
         Assigns robot to a user. Writes to DB.
@@ -128,9 +128,9 @@ class PwdManager:
         '''
         Generates hash with salt. Using bcrypt.
         '''
-        bytes = string.encode('utf-8')
+        bytes_string = string.encode('utf-8')
         salt = bcrypt.gensalt()
-        return bcrypt.hashpw(bytes, salt)
+        return bcrypt.hashpw(bytes_string, salt)
 
 
 class UserManager:
@@ -192,8 +192,8 @@ class UserManager:
         print('<-- ACCESS GRANTED -->')
         sleep(1)
         user_data = self.db_handle.get_user_data(username)
-        user = User._init_from_dict(user_data, 
-            self.db_handle, 
+        user = User.init_from_dict(user_data,
+            self.db_handle,
             Robot(user_data['robot_name'], self.robot_manager.get_build_data(user_data['robot'])))
         return user
 
