@@ -105,6 +105,7 @@ class User:
                 sleep(.5)
                 continue
             break
+
         robot = Robot(name, robot_manager.get_build_data(robot_build))
         self.pay_btc(robot.cost)
         self.set_robot(robot)
@@ -154,15 +155,15 @@ class UserManager:
         Returns User object.
         '''
         while True:
-            username = input('If you have a user, enter you username, '
-                            'otherwise press Enter to create a user:\n')
-            if not username:
+            if not (username := input('If you have a user, enter you username, '
+                            'otherwise press Enter to create a user:\n')):
                 self.current_user = self.create_new_user()
                 return self.current_user
             if not self.db_handle.user_exists(username):
                 print(f'User with name "{username}" does not exist.\n')
                 sleep(.5)
                 continue
+
             self.current_user = self.load_existing_user(username)
             return self.current_user
             
@@ -172,14 +173,14 @@ class UserManager:
         Returns tuple of user object and bool (True as user is new).
         '''
         while True:
-            username = str(input('Enter username for new user: '))
-            if not username:
+            if not (username := str(input('Enter username for new user: '))):
                 print('Username invalid.')
                 continue
             if self.db_handle.user_exists(username):
                 print(f'User with name {username} already exists.')
                 continue
             break
+
         password = self.pwd_manager.get_password()
         self.db_handle.create_user(username, password)
         user = User(username, self.db_handle)
@@ -195,16 +196,16 @@ class UserManager:
         '''
         access = False
         while not access:
-            access = self.pwd_manager.eval_match(username, self.db_handle)
-            if not access:
+            if not (access := self.pwd_manager.eval_match(username, self.db_handle)):
                 print(':-(')
+
         print('<-- ACCESS GRANTED -->')
         sleep(1)
-        user_data = self.db_handle.get_user_data(username)
-        user = User.init_from_dict(user_data,
+        user_data = self.db_handle.get_user_data(username)      # TODO - fail to load when no robot at the start of game
+        return User.init_from_dict(user_data,
             self.db_handle,
-            Robot(user_data['robot_name'], self.robot_manager.get_build_data(user_data['robot'])))
-        return user
+            Robot(user_data['robot_name'],
+                  self.robot_manager.get_build_data(user_data['robot'])))
 
     def new_user_procedure(self, user: User) -> None:
         '''

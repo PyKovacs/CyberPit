@@ -62,9 +62,7 @@ class Robot(RobotBase):
         output += f'| {self.name.upper()}\n| {self.desc}\n'
         output += f'| Equipped: {self.weapons}\n|\n'
         for param, value in self.__dict__.items():
-            if param in ['name', 'desc', 'weapons']:
-                continue
-            if param.startswith('_'):
+            if param in ['name', 'desc', 'weapons'] or param.startswith('_'):
                 continue
             value = str(value)
             if param in ['dodge_chance', 'miss_chance']:
@@ -88,7 +86,7 @@ class Robot(RobotBase):
 
     def get_weapon_energy(self, weapon) -> int:
         '''
-        Return energy and damage points of provided weapon.
+        Return energy of provided weapon.
         '''
         return WEAPONS.get(weapon, 0)
 
@@ -183,21 +181,13 @@ class RobotManager:
 
     def robot_shop(self, balance: int) -> str :
         '''
-        Prints welcome msg, available robot builds and prompts
+        Prints shop display, available robot builds and prompts
         for selection.
         Returns "cancel", or robot build name.
         '''
         while True:
-            clear_console()
-            print('*** WELCOME TO TO ROBOT SHOP ***',
-                'Please, have a look on the finest selection.',
-                f'Your balance: {balance} BTC', 
-                self.showcase(), 
-                sep='\n')
             builds = self.get_all_build_names()
-            print('Select a robot you wish to buy.',
-                builds, '(type "cancel" to return to main menu)',
-                sep='\n')
+            self._print_shop_display(balance, builds)
             build_name = input('').capitalize()
             if build_name == 'Cancel':
                 return 'cancel'
@@ -205,10 +195,31 @@ class RobotManager:
                 print(f'"{build_name}" is not valid robot build.')
                 sleep(2)
                 continue
-            build_cost = self.get_build_data(build_name).get('cost')
-            assert isinstance(build_cost, int), 'ERROR in configuration!'
-            if  build_cost > balance:
-                print(f'You cannot afford "{build_name}".')
-                sleep(2)
-                continue
-            return build_name
+            if self._affordable_robot(build_name, balance):
+                return build_name
+
+    def _print_shop_display(self, balance: int, builds: Tuple[str,...]) -> None:
+        '''
+        Returns the message to be printed when entering shop.
+        '''
+        clear_console()
+        print('*** WELCOME TO TO ROBOT SHOP ***',
+              'Please, have a look on the finest selection.',
+              f'Your balance: {balance} BTC\n',
+              self.showcase(),
+              'Select a robot you wish to buy.',
+              builds,
+              '(type "cancel" to return to main menu)',
+              sep='\n')
+
+    def _affordable_robot(self, build_name: str, balance: int) -> bool:
+        '''
+        Returns true if build cost is lower than balance.
+        '''
+        build_cost = self.get_build_data(build_name).get('cost')
+        assert isinstance(build_cost, int), 'ERROR in configuration!'
+        if  build_cost > balance:
+            print(f'You cannot afford "{build_name}".')
+            sleep(2)
+            return False
+        return True

@@ -159,21 +159,25 @@ class PlayersTurn(Turn):
         '''
         if not self.status_check(self.player):
             return
-        print(f'\nYour weapons: {self.player.weapons}')
-        print('You have following options:\n',
-              ' - type the weapon name to use it',
-              ' - type "stats" for your robot current stats',
-              ' - type "enemy" for your enemy\'s stats',
-              sep='\n')
+        self._display_options()
         while True:
             action = input('What will it be? ').lower()
             if action == 'stats':
                 print(self.player)
-            if action == 'enemy':
                 print(self.opponent)
             if action in self.player.weapons:
                 if self.attack(action, self.player, self.opponent):
                     break
+    
+    def _display_options(self) -> None:
+        '''
+        Prints playable options.
+        '''
+        print(f'\nYour weapons: {self.player.weapons}')
+        print('You have following options:\n',
+              ' - type the weapon name to use it',
+              ' - type "stats" for robots current stats',
+              sep='\n')
 
 
 class OpponentsTurn(Turn):
@@ -239,10 +243,9 @@ def run(user: User, opponent_robot: Robot) -> None:
     '''
     fight = Fight(user.robot, opponent_robot, RoundRunner())
     outcome = OutcomeEval(user.robot, opponent_robot)
-    if fight.accepted():
-        if fight.has_winner():
-            outcome.announce_winner(user)
-        else:
-            outcome.exhausted_outcome()
-        user.robot.reset()
-        input('\nPress any key to continue to main menu...')
+    if (accepted := fight.accepted()) and fight.has_winner():
+        outcome.announce_winner(user)
+    elif accepted:
+        outcome.exhausted_outcome()
+    user.robot.reset()
+    input('\nPress any key to continue to main menu...')

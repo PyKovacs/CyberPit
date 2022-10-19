@@ -41,20 +41,20 @@ class MainMenu:
             clear_console()
             print('----------------------------')
             print(self.user.name.upper())
-            if self.user.robot:
-                if details:
-                    print(self.user.robot)
-                else:
-                    print(f'Your current robot: {self.user.robot.name}')
+            if self.user.robot and details:
+                print(self.user.robot)
+            elif self.user.robot:
+                print(f'Your current robot: {self.user.robot.name}')
             else:
                 print('You don\'t have any robot yet.')
             print('Your balance: ' + self.user.get_balance(full=False))
+
             print(self.get_menu())
             details = False
             if self.execute_option() == 'robot':
                 details = True
 
-    def execute_option(self) -> str:
+    def execute_option(self) -> str:    # TODO refactor
         '''
         Reads user input and execute option.
         '''

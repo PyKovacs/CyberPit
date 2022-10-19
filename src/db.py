@@ -8,10 +8,9 @@ USER_TABLE = 'users'
 class DBHandler:
     def __init__(self):
         self.conn: sqlite3.Connection = sqlite3.connect(DB_FILE)
-        if not self.table_exists(USER_TABLE):
-            if not self.create_table():
-                print('ERROR: Failed creating users db table!')
-                exit(5)
+        if not self.table_exists(USER_TABLE) and not self.create_table():
+            print('ERROR: Failed creating users db table!')
+            exit(5)
 
     def table_exists(self, table: str) -> bool:
         '''
