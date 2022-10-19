@@ -44,6 +44,12 @@ class User:
             print(self.get_balance())
         sleep(2)
 
+    def get_balance_int(self) -> int:
+        '''
+        Prints user balance integer.
+        '''
+        return self.balance
+
     def get_balance(self, full: bool = True) -> str:
         '''
         Prints user balance statement.
@@ -83,23 +89,26 @@ class User:
         self.set_balance(self.balance - amount)
         return True
 
-    def buy_robot(self) -> None:
+    def buy_robot(self, robot_manager: RobotManager) -> None:
         '''
         Function for buying a new robot. 
         Enters robot shop, evaluate selection,
         pays for the robot and set the robot to the user.
         '''
+        robot_build = robot_manager.robot_shop(self.get_balance_int())
+        if robot_build == 'cancel':
+            return
         while True:
-            shop_output = RobotManager().robot_shop(self.get_balance())
-            if shop_output == 'cancel':
-                return
-            if isinstance(shop_output, Robot):
-                if self.pay_btc(shop_output.cost):
-                    self.set_robot(shop_output)
-                    return
-            sleep(2)
-            clear_console()
-            continue
+            name = str(input('Name your robot: '))
+            if len(name) not in range(1,16):
+                print('Name must be 1 to 15 characters long.\n')
+                sleep(.5)
+                continue
+            break
+        robot = Robot(name, robot_manager.get_build_data(robot_build))
+        self.pay_btc(robot.cost)
+        self.set_robot(robot)
+        sleep(2)
 
 
 class PwdManager:
@@ -208,4 +217,4 @@ class UserManager:
         print('You were granted 500 bitcoins for a start, use them wisely!\n')
         user.set_balance(500, show=False)
         sleep(2)
-        user.buy_robot()
+        user.buy_robot(self.robot_manager)

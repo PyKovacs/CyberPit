@@ -7,6 +7,8 @@ from abc import ABC
 from time import sleep
 from typing import Dict, List, Tuple, Union
 
+from src.utils import clear_console
+
 WEAPONS = {
     'laser': 6,
     'bumper': 3,
@@ -179,25 +181,34 @@ class RobotManager:
             showcase += str(build) + '\n'
         return showcase
 
-    def robot_shop(self, balance: str) -> Union[str, Robot]:
+    def robot_shop(self, balance: int) -> str :
         '''
         Prints welcome msg, available robot builds and prompts
         for selection.
-        Returns "cancel", empty string or Robot obj.
+        Returns "cancel", or robot build name.
         '''
-        print('*** WELCOME TO TO ROBOT SHOP ***',
-              'Please, have a look on the finest selection.',
-              balance, self.showcase(), sep='\n')
-        builds = self.get_all_build_names()
-        print('Select a robot you wish to buy.',
-               builds, '(type "cancel" to return to main menu)',
-               sep='\n')
-        build_name = input('').capitalize()
-        if build_name == 'Cancel':
-            return 'cancel'
-        if build_name not in builds:
-            print(f'"{build_name}" is not valid robot build.')
-            sleep(2)
-            return ""
-        name = input('Name your new robot: ')
-        return Robot(name, self.get_build_data(build_name))
+        while True:
+            clear_console()
+            print('*** WELCOME TO TO ROBOT SHOP ***',
+                'Please, have a look on the finest selection.',
+                f'Your balance: {balance} BTC', 
+                self.showcase(), 
+                sep='\n')
+            builds = self.get_all_build_names()
+            print('Select a robot you wish to buy.',
+                builds, '(type "cancel" to return to main menu)',
+                sep='\n')
+            build_name = input('').capitalize()
+            if build_name == 'Cancel':
+                return 'cancel'
+            if build_name not in builds:
+                print(f'"{build_name}" is not valid robot build.')
+                sleep(2)
+                continue
+            build_cost = self.get_build_data(build_name).get('cost')
+            assert isinstance(build_cost, int), 'ERROR in configuration!'
+            if  build_cost > balance:
+                print(f'You cannot afford "{build_name}".')
+                sleep(2)
+                continue
+            return build_name

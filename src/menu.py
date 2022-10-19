@@ -65,7 +65,7 @@ class MainMenu:
             exit(0)
         if action == 'shop':
             clear_console()
-            self.user.buy_robot()
+            self.user.buy_robot(self.robot_manager)
         if action == 'battle':
             clear_console()
             pit.run(self.user, self.robot_manager.generate_robot())
