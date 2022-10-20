@@ -4,21 +4,13 @@ import json
 import random
 import string
 from abc import ABC
+from enum import Enum
 from time import sleep
 from typing import Dict, List, Tuple, Union
 
 from src.utils import clear_console
 
-WEAPONS = {
-    'laser': 6,
-    'bumper': 3,
-    'saw': 4,
-    'flipper': 7,
-    'plasma_gun': 12,
-    'flame_thrower': 9,
-    'spike': 2
-}
-
+PATH_TO_BUILDS = 'data/builds.json'
 BLANK_BUILD: Dict[str, Union[str, int, List[str]]]
 BLANK_BUILD = {
         "name": "",
@@ -32,7 +24,23 @@ BLANK_BUILD = {
         "cost": 0
 }
 
-PATH_TO_BUILDS = 'data/builds.json'
+
+class Weapons(Enum):
+    SPIKE = 2
+    BUMPER = 3
+    SAW = 4
+    LASER = 6
+    FLIPPER = 7
+    FLAME_THROWER = 9
+    PLASMA_GUN = 12
+
+    @classmethod
+    def values(cls) -> List[int]:
+        '''
+        Returns list of values.
+        '''
+        return [key.value for key in cls]
+
 
 class RobotBase(ABC):
     name: str
@@ -84,18 +92,18 @@ class Robot(RobotBase):
         self.health -= damage
         return True
 
-    def get_weapon_energy(self, weapon) -> int:
+    def get_weapon_energy(self, weapon: str) -> int:
         '''
         Return energy of provided weapon.
         '''
-        return WEAPONS.get(weapon, 0)
+        return Weapons[weapon.upper()].value
 
     def use_weapon(self, weapon: str) -> int:
         '''
         Reduce the energy and calculate miss.
         Return -1 if not enough energy, 0 if missed, else damage value.
         '''
-        energy_cost = WEAPONS[weapon]
+        energy_cost = self.get_weapon_energy(weapon)
         if self.energy < energy_cost:
             return -1
         self.energy -= energy_cost
@@ -106,9 +114,10 @@ class Robot(RobotBase):
 
     def is_exhausted(self) -> bool:
         '''
-        Returns False if robot has no energy left for using any weapon
+        Returns False if robot has no energy left for using any weapon.
         '''
-        energy_needed=min([energy for weapon, energy in WEAPONS.items() if weapon in self.weapons])
+        energy_needed=min([energy for energy in Weapons.values() 
+                           if Weapons(energy).name.lower() in self.weapons])
         if self.energy >= energy_needed:
             return False
         return True
