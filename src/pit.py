@@ -212,7 +212,7 @@ class OutcomeEval:
         sleep(.5)
         if self.player_won():
             delayed_typing(f'\n  === {self.player.name.upper()} ===\n')
-            user.get_btc(50)
+            user.get_btc(int((self.opponent.cost / 10) * 2))
         else:
             delayed_typing(f'\n  === {self.opponent.name.upper()} ===')
         sleep(1)
