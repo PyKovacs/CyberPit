@@ -40,7 +40,7 @@ class Weapons(Enum):
         Returns list of values.
         '''
         return [key.value for key in cls]
-    
+
     @classmethod
     def get_energy(cls, weapon: str) -> int:
         '''
@@ -117,7 +117,7 @@ class Robot(RobotBase):
         '''
         Returns False if robot has no energy left for using any weapon.
         '''
-        energy_needed=min([energy for energy in Weapons.values() 
+        energy_needed=min([energy for energy in Weapons.values()
                            if Weapons(energy).name.lower() in self.weapons])
         if self.energy >= energy_needed:
             return False

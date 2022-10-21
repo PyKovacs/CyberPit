@@ -16,7 +16,8 @@ class DBHandler:
         '''
         Return bool if table exists in db
         '''
-        cursor = self.conn.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
+        cursor = self.conn.execute("SELECT name FROM sqlite_master "
+                                   f"WHERE type='table' AND name='{table}';")
         return bool(cursor.fetchall())
 
     def create_table(self, table_name: str = USER_TABLE) -> bool:
@@ -28,12 +29,14 @@ class DBHandler:
         self.conn.commit()
         return self.table_exists(table_name)
 
-    def create_user(self, name: str, passwd: str, robot: str = '', robot_name: str = '', balance: int = 0, table: str = USER_TABLE) -> None:
+    def create_user(self, name: str, passwd: str,
+                    table: str = USER_TABLE) -> None:
         '''
         Creates user row with provided values.
         '''
         try:
-            self.conn.execute(f"INSERT INTO {table} VALUES ((?),(?),(?),(?),(?))", (name, passwd, robot, robot_name, balance))
+            self.conn.execute(f"INSERT INTO {table} VALUES ((?),(?),(?),(?),(?))",
+                              (name, passwd, '', '', 0))
             self.conn.commit()
         except (sqlite3.IntegrityError, sqlite3.OperationalError) as emsg:
             print('ERROR: Crashed while creating user entry.')
@@ -45,10 +48,12 @@ class DBHandler:
         Updates the robot value for specific user.
         '''
         try:
-            self.conn.execute(f"UPDATE {table} SET robot = '{robot}' WHERE name = '{user}'")
-            self.conn.execute(f"UPDATE {table} SET robot_name = '{robot_name}' WHERE name = '{user}'")
+            self.conn.execute(f"UPDATE {table} SET robot = "
+                              f"'{robot}' WHERE name = '{user}'")
+            self.conn.execute(f"UPDATE {table} SET robot_name = "
+                              f"'{robot_name}' WHERE name = '{user}'")
             self.conn.commit()
-        except Exception as emsg:
+        except (sqlite3.IntegrityError, sqlite3.OperationalError) as emsg:
             print('ERROR: Crashed while updating user entry.')
             print(emsg)
             exit(5)
@@ -60,7 +65,7 @@ class DBHandler:
         try:
             self.conn.execute(f"UPDATE {table} SET balance = '{balance}' WHERE name = '{user}'")
             self.conn.commit()
-        except Exception as emsg:
+        except (sqlite3.IntegrityError, sqlite3.OperationalError) as emsg:
             print('ERROR: Crashed while updating user entry.')
             print(emsg)
             exit(5)
@@ -70,7 +75,8 @@ class DBHandler:
         Returns dict of user data from users table.
         '''
         columns = ['name', 'robot', 'robot_name', 'balance']
-        cursor = self.conn.execute(f"SELECT {', '.join(columns)} from {table} where name='{username}'")
+        cursor = self.conn.execute(f"SELECT {', '.join(columns)} from "
+                                   f"{table} where name='{username}'")
         row = cursor.fetchall()
         data = {}
         for index, column in enumerate(columns):

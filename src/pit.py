@@ -168,7 +168,7 @@ class PlayersTurn(Turn):
             if action in self.player.weapons:
                 if self.attack(action, self.player, self.opponent):
                     break
-    
+
     def _display_options(self) -> None:
         '''
         Prints playable options.
@@ -233,8 +233,7 @@ class OutcomeEval:
         '''
         if self.opponent.health > self.player.health:
             return False
-        else:
-            return True
+        return True
 
 
 def run(user: User, opponent_robot: Robot) -> None:

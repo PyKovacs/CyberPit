@@ -91,7 +91,7 @@ class User:
 
     def buy_robot(self, robot_shop: RobotShop) -> None:
         '''
-        Function for buying a new robot. 
+        Function for buying a new robot.
         Enters robot shop, evaluate selection,
         pays for the robot and set the robot to the user.
         '''
@@ -144,7 +144,8 @@ class PwdManager:
 
 
 class UserManager:
-    def __init__(self, db_handler: DBHandler, pwd_manager: PwdManager, robot_manager: RobotManager) -> None:
+    def __init__(self, db_handler: DBHandler, pwd_manager: PwdManager,
+                 robot_manager: RobotManager) -> None:
         self.db_handle = db_handler
         self.pwd_manager = pwd_manager
         self.robot_manager = robot_manager
@@ -166,7 +167,7 @@ class UserManager:
 
             self.current_user = self.load_existing_user(username)
             return self.current_user
-            
+
     def create_new_user(self) -> User:
         '''
         Creates a new user + password. Writes to DB.
@@ -201,7 +202,8 @@ class UserManager:
 
         print('<-- ACCESS GRANTED -->')
         sleep(1)
-        user_data = self.db_handle.get_user_data(username)      # TODO - fail to load when no robot at the start of game
+        user_data = self.db_handle.get_user_data(username)
+        # TODO - fail to load when no robot at the start of game
         return User.init_from_dict(user_data,
             self.db_handle,
             Robot(user_data['robot_name'],

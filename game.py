@@ -24,6 +24,9 @@ class Game:
         self.main_menu.present_menu()
 
 def main():
+    '''
+    Main function running the game.
+    '''
     try:
         game = Game()
         game.run()

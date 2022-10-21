@@ -1,6 +1,6 @@
 from typing import Dict
 
-import src.pit as pit
+from src import pit
 from src.robots import RobotManager, RobotShop
 from src.users import User
 from src.utils import clear_console
@@ -8,7 +8,7 @@ from src.utils import clear_console
 
 class MainMenu:
 
-    def __init__(self, user: User, robot_manager = RobotManager) -> None:
+    def __init__(self, user: User, robot_manager: RobotManager) -> None:
         self.user = user
         self.robot_manager = robot_manager
 
