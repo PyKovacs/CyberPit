@@ -209,13 +209,13 @@ class UserManager:
 
     def new_user_procedure(self, user: User) -> None:
         '''
-        Grants 500 BTC to balance, calls purchase robot func.
+        Grants starting BTC to balance, calls purchase robot func.
         Sequence to start if user is new.
         '''
         clear_console()
         print('It seems you are new here.')
         sleep(1)
-        print('You were granted 500 bitcoins for a start, use them wisely!\n')
-        user.set_balance(500, show=False)
+        print('You were granted 300 bitcoins for a start, use them wisely!\n')
+        user.set_balance(300, show=False)
         sleep(2)
         user.buy_robot(self.robot_manager)
