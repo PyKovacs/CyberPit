@@ -1,7 +1,7 @@
 from typing import Dict
 
 import src.pit as pit
-from src.robots import RobotManager
+from src.robots import RobotManager, RobotShop
 from src.users import User
 from src.utils import clear_console
 
@@ -65,7 +65,7 @@ class MainMenu:
             exit(0)
         if action == 'shop':
             clear_console()
-            self.user.buy_robot(self.robot_manager)
+            self.user.buy_robot(RobotShop(self.robot_manager, self.user.get_balance_int()))
         if action == 'battle':
             clear_console()
             pit.run(self.user, self.robot_manager.generate_robot())

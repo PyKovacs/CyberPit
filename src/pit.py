@@ -2,7 +2,7 @@ import random
 from abc import ABC, abstractmethod
 from time import sleep
 
-from src.robots import Robot
+from src.robots import Robot, Weapons
 from src.users import User
 from src.utils import clear_console, delayed_typing
 
@@ -48,7 +48,7 @@ class Fight:
         Looping round_runner until the end of fight.
         Returns True if there is a winner.
         '''
-        self.welcome_sequence()
+        self._welcome_sequence()
         round_count = 1
         while True:
             if self.player.health <= 0 or self.opponent.health <= 0:
@@ -60,7 +60,7 @@ class Fight:
                                           self.opponent)
             round_count += 1
 
-    def welcome_sequence(self) -> None:
+    def _welcome_sequence(self) -> None:
         '''
         Welcome sequence before the fight.
         '''
@@ -190,7 +190,7 @@ class OpponentsTurn(Turn):
             return
         weapons_available = [weapon for weapon in self.opponent.weapons
                              if self.opponent.energy
-                             >= self.opponent.get_weapon_energy(weapon)]
+                             >= Weapons.get_energy(weapon)]
         weapon = random.choice(weapons_available)
         self.attack(weapon, self.opponent, self.player)
 

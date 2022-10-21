@@ -6,7 +6,7 @@ from typing import Dict
 import bcrypt  # type: ignore
 
 from src.db import DBHandler
-from src.robots import Robot, RobotManager
+from src.robots import Robot, RobotManager, RobotShop
 from src.utils import clear_console
 
 
@@ -89,14 +89,14 @@ class User:
         self.set_balance(self.balance - amount)
         return True
 
-    def buy_robot(self, robot_manager: RobotManager) -> None:
+    def buy_robot(self, robot_shop: RobotShop) -> None:
         '''
         Function for buying a new robot. 
         Enters robot shop, evaluate selection,
         pays for the robot and set the robot to the user.
         '''
-        robot_build = robot_manager.robot_shop(self.get_balance_int())
-        if robot_build == 'cancel':
+        robot_build_data = robot_shop.select_build()
+        if not robot_build_data:
             return
         while True:
             name = str(input('Name your robot: '))
@@ -106,7 +106,7 @@ class User:
                 continue
             break
 
-        robot = Robot(name, robot_manager.get_build_data(robot_build))
+        robot = Robot(name, robot_build_data)
         self.pay_btc(robot.cost)
         self.set_robot(robot)
         sleep(2)
@@ -218,4 +218,4 @@ class UserManager:
         print('You were granted 300 bitcoins for a start, use them wisely!\n')
         user.set_balance(300, show=False)
         sleep(2)
-        user.buy_robot(self.robot_manager)
+        user.buy_robot(RobotShop(self.robot_manager, user.get_balance_int()))

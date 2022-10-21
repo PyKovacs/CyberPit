@@ -6,7 +6,7 @@ import string
 from abc import ABC
 from enum import Enum
 from time import sleep
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from src.utils import clear_console
 
@@ -40,6 +40,13 @@ class Weapons(Enum):
         Returns list of values.
         '''
         return [key.value for key in cls]
+    
+    @classmethod
+    def get_energy(cls, weapon: str) -> int:
+        '''
+        Return energy of provided weapon.
+        '''
+        return cls[weapon.upper()].value
 
 
 class RobotBase(ABC):
@@ -92,18 +99,12 @@ class Robot(RobotBase):
         self.health -= damage
         return True
 
-    def get_weapon_energy(self, weapon: str) -> int:
-        '''
-        Return energy of provided weapon.
-        '''
-        return Weapons[weapon.upper()].value
-
     def use_weapon(self, weapon: str) -> int:
         '''
         Reduce the energy and calculate miss.
         Return -1 if not enough energy, 0 if missed, else damage value.
         '''
-        energy_cost = self.get_weapon_energy(weapon)
+        energy_cost = Weapons.get_energy(weapon)
         if self.energy < energy_cost:
             return -1
         self.energy -= energy_cost
@@ -169,7 +170,8 @@ class RobotManager:
         robot_name = self.generate_robot_name()
         return Robot(robot_name, self.get_build_data(robot_build))
 
-    def generate_robot_name(self) -> str:
+    @staticmethod
+    def generate_robot_name() -> str:
         '''
         Generates random name with 2 letters and 3 numbers in format XX-012.
         '''
@@ -188,24 +190,31 @@ class RobotManager:
             showcase += str(build) + '\n'
         return showcase
 
-    def robot_shop(self, balance: int) -> str :
+
+
+class RobotShop:
+    def __init__(self, robot_manager: RobotManager,  balance: int):
+        self.robot_manager = robot_manager
+        self.balance = balance
+
+    def select_build(self) -> Optional[Dict[str, Union[str, int, List[str]]]]:
         '''
         Prints shop display, available robot builds and prompts
         for selection.
         Returns "cancel", or robot build name.
         '''
         while True:
-            builds = self.get_all_build_names()
-            self._print_shop_display(balance, builds)
+            builds = self.robot_manager.get_all_build_names()
+            self._print_shop_display(self.balance, builds)
             build_name = input('').capitalize()
             if build_name == 'Cancel':
-                return 'cancel'
+                return None
             if build_name not in builds:
                 print(f'"{build_name}" is not valid robot build.')
                 sleep(2)
                 continue
-            if self._affordable_robot(build_name, balance):
-                return build_name
+            if self._affordable_robot(build_name, self.balance):
+                return self.robot_manager.get_build_data(build_name)
 
     def _print_shop_display(self, balance: int, builds: Tuple[str,...]) -> None:
         '''
@@ -215,7 +224,7 @@ class RobotManager:
         print('*** WELCOME TO TO ROBOT SHOP ***',
               'Please, have a look on the finest selection.',
               f'Your balance: {balance} BTC\n',
-              self.showcase(),
+              self.robot_manager.showcase(),
               'Select a robot you wish to buy.',
               builds,
               '(type "cancel" to return to main menu)',
@@ -225,7 +234,7 @@ class RobotManager:
         '''
         Returns true if build cost is lower than balance.
         '''
-        build_cost = self.get_build_data(build_name).get('cost')
+        build_cost = self.robot_manager.get_build_data(build_name).get('cost')
         assert isinstance(build_cost, int), 'ERROR in configuration!'
         if  build_cost > balance:
             print(f'You cannot afford "{build_name}".')
