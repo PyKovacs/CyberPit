@@ -8,9 +8,7 @@ from src.utils import clear_console, delayed_typing
 
 
 class Fight:
-    '''
-    Main class where actual fight is happening,
-    '''
+    """Main class where actual fight is happening."""
     def __init__(
             self,
             player: Robot,
@@ -23,11 +21,12 @@ class Fight:
         self.round_runner = round_runner
 
     def accepted(self) -> bool:
-        '''
-        Presents the opponent and asks the user if
-        he/she wants to fight or flight.
+        """
         Return True if challenge is accepted.
-        '''
+
+        Presents the opponent and ask the user if
+        he/she wants to fight or flight.
+        """
         print('Ready for the fight?\n')
         sleep(.5)
         print(f'You stand against {self.opponent.name}.')
@@ -44,10 +43,11 @@ class Fight:
                 return True
 
     def has_winner(self) -> bool:
-        '''
-        Looping round_runner until the end of fight.
-        Returns True if there is a winner.
-        '''
+        """
+        Loop round_runner until the end of fight.
+
+        Return True if there is a winner.
+        """
         self._welcome_sequence()
         round_count = 1
         while True:
@@ -61,9 +61,7 @@ class Fight:
             round_count += 1
 
     def _welcome_sequence(self) -> None:
-        '''
-        Welcome sequence before the fight.
-        '''
+        """Print welcome sequence before the fight."""
         clear_console()
         delayed_typing('LAAAAADIEEEES AND GENTLEMEEEEEN...')
         sleep(0.5)
@@ -81,19 +79,14 @@ class Fight:
 
 
 class RoundRunner:
-    '''
-    Helper class to call correct turn (player vs opponent).
-    '''
+    """Helper class to call correct turn (player vs opponent)."""
+
     def start_turn(self, turn: 'Turn') -> None:
-        '''
-        Executes turn based on Turn instance as argument.
-        '''
+        """Execute turn based on Turn instance passed as argument."""
         turn.execute()
 
     def start_round(self, count: int, player: Robot, opponent: Robot) -> None:
-        '''
-        Executes Players and Opponents turn within one round.
-        '''
+        """Execute Players and Opponents turn within one round."""
         print(f'-------- ROUND {count} --------')
         self.start_turn(PlayersTurn(player, opponent))
         self.start_turn(OpponentsTurn(player, opponent))
@@ -101,25 +94,24 @@ class RoundRunner:
 
 
 class Turn(ABC):
-    '''
-    Abstract class for turn.
-    '''
+    """Abstract class for turn."""
+
     def __init__(self, player: Robot, opponent: Robot) -> None:
         self.player = player
         self.opponent = opponent
 
     @abstractmethod
     def execute(self) -> None:
-        '''
-        Abstract method for turn execution.
-        '''
+        """Abstract method for turn execution."""
 
     def status_check(self, robot: Robot) -> bool:
-        '''
-        Returns False if robot energy is below
+        """
+        Evaluate if robot can make a turn.
+
+        Return False if robot energy is below
         or equal to lowest weapon energy (exhausted).
-        Also returns False is health is below or equal to 0.
-        '''
+        Also return False if health is below or equal to 0.
+        """
         if robot.is_exhausted():
             delayed_typing(f' -> {robot.name} is out of energy.')
             return False
@@ -128,11 +120,12 @@ class Turn(ABC):
         return True
 
     def attack(self, weapon: str, attacking: Robot, attacked: Robot) -> bool:
-        '''
+        """
         Attack execution and evaluation.
-        Returns True if attack was performed.
+
+        Return True if attack was performed.
         Return False if there is not enough energy to use the weapon.
-        '''
+        """
         weapon_energy = attacking.use_weapon(weapon)
         if weapon_energy == -1:
             delayed_typing('  -> not enough energy...')
@@ -153,10 +146,7 @@ class Turn(ABC):
 
 class PlayersTurn(Turn):
     def execute(self) -> None:
-        '''
-        Displays options for players turn and evaluates input.
-        First performs status_check.
-        '''
+        """Display options for players turn and evaluates input."""
         if not self.status_check(self.player):
             return
         self._display_options()
@@ -170,9 +160,7 @@ class PlayersTurn(Turn):
                     break
 
     def _display_options(self) -> None:
-        '''
-        Prints playable options.
-        '''
+        """Print playable options."""
         print(f'\nYour weapons: {self.player.weapons}')
         print('You have following options:\n',
               ' - type the weapon name to use it',
@@ -182,10 +170,7 @@ class PlayersTurn(Turn):
 
 class OpponentsTurn(Turn):
     def execute(self) -> None:
-        '''
-        Pick a random weapon from arsenal and executes attack.
-        First performs status_check.
-        '''
+        """Pick a random weapon from arsenal and execute attack."""
         if not self.status_check(self.opponent):
             return
         weapons_available = [weapon for weapon in self.opponent.weapons
@@ -196,18 +181,13 @@ class OpponentsTurn(Turn):
 
 
 class OutcomeEval:
-    '''
-    Class for outcome evaluation and announcement.
-    '''
+    """Class for outcome evaluation and announcement."""
     def __init__(self, player: Robot, opponent: Robot) -> None:
         self.player = player
         self.opponent = opponent
 
     def announce_winner(self, user: User) -> None:
-        '''
-        Calls player_won func to evaluate winner, announce
-        the winner and pays the player if won.
-        '''
+        """Evaluate, announce the winner and pays the player if won. """
         delayed_typing('Aaaand the winner iiiiiiis.....')
         sleep(.5)
         if self.player_won():
@@ -218,9 +198,7 @@ class OutcomeEval:
         sleep(1)
 
     def exhausted_outcome(self) -> None:
-        '''
-        Sequence when both bots are out of energy.
-        '''
+        """Sequence when both bots are out of energy."""
         delayed_typing('Oh no! Both bots are out of energy '
                        'and are unable to continue.')
         sleep(1)
@@ -228,18 +206,14 @@ class OutcomeEval:
                        'Next time, keep an eye on that battery folks!')
 
     def player_won(self) -> bool:
-        '''
-        Returns True if player won.
-        '''
+        """Return True if player won."""
         if self.opponent.health > self.player.health:
             return False
         return True
 
 
 def run(user: User, opponent_robot: Robot) -> None:
-    '''
-    Main function to run the pit.
-    '''
+    """Main function to run the pit."""
     fight = Fight(user.robot, opponent_robot, RoundRunner())
     outcome = OutcomeEval(user.robot, opponent_robot)
     if (accepted := fight.accepted()) and fight.has_winner():

@@ -18,15 +18,11 @@ class Game:
         theme()
 
     def run(self):
-        '''
-        Game flow sequence.
-        '''
+        """Game flow sequence."""
         self.main_menu.present_menu()
 
 def main():
-    '''
-    Main function running the game.
-    '''
+    """Main function running the game."""
     try:
         game = Game()
         game.run()

@@ -13,18 +13,14 @@ class MainMenu:
         self.robot_manager = robot_manager
 
     def get_menu_options(self) -> Dict[str, str]:
-        '''
-        Returns main menu options list
-        '''
+        """Return main menu options list."""
         return {'battle': 'Enter the PIT and fight!',
                 'robot': 'Shows your robot details.',
                 'shop': 'Enter the robot shop.',
                 'quit': 'Exit the game.'}
 
     def get_menu(self) -> str:
-        '''
-        Returns str of main menu options
-        '''
+        """Return str table of main menu options."""
         menu = f'\n{"":#^20}'
         menu += f'\n-{"MAIN MENU":^18}-\n'
         for item, desc in self.get_menu_options().items():
@@ -33,9 +29,7 @@ class MainMenu:
         return menu
 
     def present_menu(self) -> None:
-        '''
-        Presents the main menu.
-        '''
+        """Present the main menu."""
         details = False
         while True:
             clear_console()
@@ -55,9 +49,7 @@ class MainMenu:
                 details = True
 
     def execute_option(self) -> str:    # TODO refactor
-        '''
-        Reads user input and execute option.
-        '''
+        """Read user input and execute option."""
         print('\nPick your action.')
         print(tuple(self.get_menu_options().keys()))
         action = input('').lower()

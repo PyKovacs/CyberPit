@@ -19,10 +19,12 @@ class User:
 
     @staticmethod
     def init_from_dict(user_data: Dict[str, str], db_handle: DBHandler, robot: Robot) -> 'User':
-        '''
-        Reads the dictionary (provided by DB) and instantiate a user
+        """
+        Return User instance created from dictionary.
+
+        Read the dictionary (provided by DB) and instantiate a user
         based on dict values.
-        '''
+        """
         try:
             return User(user_data['name'],
                         db_handle,
@@ -33,11 +35,12 @@ class User:
             exit(2)
 
     def set_balance(self, balance: int, show: bool = True) -> None:
-        '''
-        Sets user balance to provided value. Writes to DB.
-        Calls show_balance.
-        show argument sets if balance is printed after update
-        '''
+        """
+        Set user balance to provided value.
+        
+        Write to DB, call show_balance.
+        - show argument set to True if show balance after set.
+        """
         self.balance = balance
         self.db_handle.update_balance(self.name, self.balance)
         if show:
@@ -45,41 +48,41 @@ class User:
         sleep(2)
 
     def get_balance_int(self) -> int:
-        '''
-        Prints user balance integer.
-        '''
+        """Print user balance integer."""
         return self.balance
 
     def get_balance(self, full: bool = True) -> str:
-        '''
-        Prints user balance statement.
-        full argument sets if to return full statement,
-        if False, returns only BTC value
-        '''
+        """
+        Print user balance statement.
+
+        - full argument - True to return full statement,
+          False - return only BTC value
+        """
         if full:
             return f'$$$ Current balance: {self.balance} BTC.'
         return f'{self.balance} BTC'
 
     def set_robot(self, robot: Robot) -> None:
-        '''
-        Assigns robot to a user. Writes to DB.
-        '''
+        """
+        Assign robot to a user.
+
+        Write to DB.
+        """
         self.robot = robot
         self.db_handle.update_robot(self.name, self.robot.build, self.robot.name)
 
     def get_btc(self, amount: int) -> None:
-        '''
-        Adds provided amount to balance. Calls set balance.
-        '''
+        """Add provided amount to balance."""
         print(f'$$$ {amount} BTC earned!')
         sleep(2)
         self.set_balance(self.balance + amount)
 
     def pay_btc(self, amount: int) -> bool:
-        '''
-        Subtracts provided amount from balance. Calls set balance.
-        Returns bool (False if balance insufficient)
-        '''
+        """
+        Subtract provided amount from balance.
+
+        Return bool (False if balance insufficient).
+        """
         if amount > self.balance:
             print('$$$ Insufficient funds :(')
             sleep(1)
@@ -90,11 +93,12 @@ class User:
         return True
 
     def buy_robot(self, robot_shop: RobotShop) -> None:
-        '''
+        """
         Function for buying a new robot.
-        Enters robot shop, evaluate selection,
-        pays for the robot and set the robot to the user.
-        '''
+
+        Enter robot shop, evaluate selection,
+        pay for the robot and set the robot to the user.
+        """
         robot_build_data = robot_shop.select_build()
         if not robot_build_data:
             return
@@ -114,9 +118,11 @@ class User:
 
 class PwdManager:
     def get_password(self) -> str:
-        '''
-        Prompts for new password using getpass. Returns hashed pwd.
-        '''
+        """
+        Prompt for new password.
+
+        Using getpass. Return hashed pwd.
+        """
         while True:
             pwd = str(getpass('Enter password for new user: '))
             confirm = str(getpass('Confirm the password for new user: '))
@@ -128,16 +134,12 @@ class PwdManager:
         return self._get_hash(pwd)
 
     def eval_match(self, username: str, db_handle: DBHandler) -> bool:
-        '''
-        Asks for pwd and returns True if pwd match the one from DB
-        '''
+        """Ask for pwd and return True if pwd match the one from DB."""
         return bcrypt.checkpw(getpass().encode('utf-8'),
                               db_handle.get_pwdhash(username))
 
     def _get_hash(self, string: str) -> str:
-        '''
-        Generates hash with salt. Using bcrypt.
-        '''
+        """Return generated hash with salt."""
         bytes_string = string.encode('utf-8')
         salt = bcrypt.gensalt()
         return bcrypt.hashpw(bytes_string, salt)
@@ -151,10 +153,7 @@ class UserManager:
         self.robot_manager = robot_manager
 
     def read_username(self) -> User:
-        '''
-        Prompts for username. Calls new_user or existing_user func.
-        Returns User object.
-        '''
+        """Prompt for username and return User instance."""
         while True:
             if not (username := input('If you have a user, enter you username, '
                             'otherwise press Enter to create a user:\n')):
@@ -169,10 +168,7 @@ class UserManager:
             return self.current_user
 
     def create_new_user(self) -> User:
-        '''
-        Creates a new user + password. Writes to DB.
-        Returns tuple of user object and bool (True as user is new).
-        '''
+        """Return a new user user instance."""
         while True:
             if not (username := str(input('Enter username for new user: '))):
                 print('Username invalid.')
@@ -189,12 +185,12 @@ class UserManager:
         return user
 
     def load_existing_user(self, username: str) -> User:
-        '''
+        """
+        Return existing user instance.
+
         Authenticate existing user,
         instantiate user object from dict.
-
-        Returns tuple of user object and bool (False as user is not new).
-        '''
+        """
         access = False
         while not access:
             if not (access := self.pwd_manager.eval_match(username, self.db_handle)):
@@ -210,10 +206,11 @@ class UserManager:
                   self.robot_manager.get_build_data(user_data['robot'])))
 
     def new_user_procedure(self, user: User) -> None:
-        '''
-        Grants starting BTC to balance, calls purchase robot func.
+        """
         Sequence to start if user is new.
-        '''
+
+        Grant starting BTC to balance, calls purchase robot func.
+        """
         clear_console()
         print('It seems you are new here.')
         sleep(1)

@@ -36,16 +36,12 @@ class Weapons(Enum):
 
     @classmethod
     def values(cls) -> List[int]:
-        '''
-        Returns list of values.
-        '''
+        """Return list of values."""
         return [key.value for key in cls]
 
     @classmethod
     def get_energy(cls, weapon: str) -> int:
-        '''
-        Return energy of provided weapon.
-        '''
+        """Return energy of provided weapon."""
         return cls[weapon.upper()].value
 
 
@@ -69,10 +65,11 @@ class Robot(RobotBase):
             setattr(self, attr, value)
 
     def __str__(self) -> str:
-        '''
-        Representation of robot object, list of attributes.
+        """
+        User friendly print of robot object, list of attributes.
+
         Used in showcase as well as separately for specific Robot obj.
-        '''
+        """
         output = " " + 28*'_' + '\n'
         output += f'| {self.name.upper()}\n| {self.desc}\n'
         output += f'| Equipped: {self.weapons}\n|\n'
@@ -89,10 +86,11 @@ class Robot(RobotBase):
         return output
 
     def take_damage(self, damage: int) -> bool:
-        '''
-        Reduce the HP by damage.
-        Return False if dodged, else True
-        '''
+        """
+        Reduce the HP by damage amount.
+
+        Return False if dodged, else True.
+        """
         dodged_int = random.randint(1,100)
         if dodged_int < self.dodge_chance:
             return False
@@ -100,10 +98,11 @@ class Robot(RobotBase):
         return True
 
     def use_weapon(self, weapon: str) -> int:
-        '''
+        """
         Reduce the energy and calculate miss.
+
         Return -1 if not enough energy, 0 if missed, else damage value.
-        '''
+        """
         energy_cost = Weapons.get_energy(weapon)
         if self.energy < energy_cost:
             return -1
@@ -114,9 +113,7 @@ class Robot(RobotBase):
         return energy_cost
 
     def is_exhausted(self) -> bool:
-        '''
-        Returns False if robot has no energy left for using any weapon.
-        '''
+        """Return False if robot has no energy left for using any weapon."""
         energy_needed=min([energy for energy in Weapons.values()
                            if Weapons(energy).name.lower() in self.weapons])
         if self.energy >= energy_needed:
@@ -124,9 +121,7 @@ class Robot(RobotBase):
         return True
 
     def reset(self) -> None:
-        '''
-        Resets the energy and health.
-        '''
+        """Reset the energy and health."""
         assert isinstance(self._init_data['health'], int)
         assert isinstance(self._init_data['energy'], int)
         self.health = self._init_data['health']
@@ -134,9 +129,7 @@ class Robot(RobotBase):
 
 
 class RobotManager:
-    '''
-    Managing the actions around robots.
-    '''
+    """Managing the actions around robots."""
 
     def __init__(self) -> None:
         with open(PATH_TO_BUILDS, 'r') as builds_file:
@@ -145,15 +138,11 @@ class RobotManager:
         self.blank_build = Robot("", BLANK_BUILD)
 
     def get_all_build_names(self) -> Tuple[str,...]:
-        '''
-        Returns Dict of all robot builds with attributes.
-        '''
+        """Return Dict of all robot builds with attributes."""
         return tuple(self.builds.keys())
 
     def get_build_data(self, build_name: str) -> Dict[str, Union[str, int, List[str]]]:
-        '''
-        Returns Dict of robot build attributes.
-        '''
+        """Return Dict of specific robot build attributes."""
         try:
             return self.builds[build_name]
         except KeyError:
@@ -163,27 +152,21 @@ class RobotManager:
             exit(1)
 
     def generate_robot(self) -> Robot:
-        '''
-        Generates random robot from available builds.
-        '''
+        """Generate random robot from available builds."""
         robot_build = random.choice(self.get_all_build_names())
         robot_name = self.generate_robot_name()
         return Robot(robot_name, self.get_build_data(robot_build))
 
     @staticmethod
     def generate_robot_name() -> str:
-        '''
-        Generates random name with 2 letters and 3 numbers in format XX-012.
-        '''
+        """Generate random name with 2 letters and 3 numbers in format XX-012."""
         first = random.choice(string.ascii_letters)
         second = random.choice(string.ascii_letters)
         num = random.randint(100, 999)
         return f'{first}{second}-{num}'
 
     def showcase(self) -> str:
-        '''
-        Returns list of all builds with all attributes listed.
-        '''
+        """Return user-friendly list of all builds with all attributes listed."""
         showcase = ''
         for build_data in self.builds.values():
             build = Robot(build_data['build'], build_data)
@@ -198,11 +181,11 @@ class RobotShop:
         self.balance = balance
 
     def select_build(self) -> Optional[Dict[str, Union[str, int, List[str]]]]:
-        '''
-        Prints shop display, available robot builds and prompts
-        for selection.
-        Returns "cancel", or robot build name.
-        '''
+        """
+        Print shop display, available robot builds and prompt for selection.
+
+        Return build data, or None if purchase canceled.
+        """
         while True:
             builds = self.robot_manager.get_all_build_names()
             self._print_shop_display(self.balance, builds)
@@ -217,9 +200,7 @@ class RobotShop:
                 return self.robot_manager.get_build_data(build_name)
 
     def _print_shop_display(self, balance: int, builds: Tuple[str,...]) -> None:
-        '''
-        Returns the message to be printed when entering shop.
-        '''
+        """Print the message when entering shop."""
         clear_console()
         print('*** WELCOME TO TO ROBOT SHOP ***',
               'Please, have a look on the finest selection.',
@@ -231,9 +212,7 @@ class RobotShop:
               sep='\n')
 
     def _affordable_robot(self, build_name: str, balance: int) -> bool:
-        '''
-        Returns true if build cost is lower than balance.
-        '''
+        """Return True if build cost is lower than balance."""
         build_cost = self.robot_manager.get_build_data(build_name).get('cost')
         assert isinstance(build_cost, int), 'ERROR in configuration!'
         if  build_cost > balance:

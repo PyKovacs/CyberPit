@@ -3,10 +3,8 @@ import pytest
 from src import robots
 
 
-def test_weapons_get_energy():
-    '''
-    Testing weapons get energy method with various inputs.
-    '''
+def test_weapons_get_energy() -> None:
+    """Test weapons, get energy method with various inputs."""
     assert robots.Weapons.get_energy('laser') == 6
     assert robots.Weapons.get_energy('spike') == 2
     assert robots.Weapons.get_energy('plasma_gun') == 12
