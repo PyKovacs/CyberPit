@@ -41,14 +41,17 @@ def delayed_typing(text: str, sleep_interval: float = 0.05) -> None:
 def theme() -> None:
     """Theme show at the beginning of the game."""
     clear_console()
-    sleep_time = 0.008
-    for line in THEME_TITLE:
-        for char in line:
-            if char == 'b':
-                sleep(0.5)
-                sleep_time = 0.1
-            print(char, end="", flush=True)
-            sleep(sleep_time)
-        sleep_time /= 1.15
-    sleep(3)
+    try:
+        sleep_time = 0.008
+        for line in THEME_TITLE:
+            for char in line:
+                if char == 'b':
+                    sleep(0.5)
+                    sleep_time = 0.1
+                print(char, end="", flush=True)
+                sleep(sleep_time)
+            sleep_time /= 1.15
+        sleep(3)
+    except KeyboardInterrupt:
+        pass
     clear_console()

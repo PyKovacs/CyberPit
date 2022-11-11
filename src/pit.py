@@ -63,20 +63,22 @@ class Fight:
     def _welcome_sequence(self) -> None:
         """Print welcome sequence before the fight."""
         clear_console()
-        delayed_typing('LAAAAADIEEEES AND GENTLEMEEEEEN...')
-        sleep(0.5)
-        delayed_typing('Welcome, to THE CYBER PIT!\n')
-        sleep(0.2)
-        delayed_typing('A place where metal meets metal in '
-                       'THE MOST SPECTACULAR ROOBOOOT FIIIGTHS!')
-        sleep(0.5)
-        delayed_typing(f'Tonight, {self.player.name} will confront '
-                       f'{self.opponent.name} in unprecedented cyber dance.\n')
-        sleep(1)
-        delayed_typing('LET THE SHOOOOOOOW BEGIIIIIIIINNN !!!!', 0.08)
-        sleep(2)
+        try:
+            delayed_typing('LAAAAADIEEEES AND GENTLEMEEEEEN...')
+            sleep(0.5)
+            delayed_typing('Welcome, to THE CYBER PIT!\n')
+            sleep(0.2)
+            delayed_typing('A place where metal meets metal in '
+                        'THE MOST SPECTACULAR ROOBOOOT FIIIGTHS!')
+            sleep(0.5)
+            delayed_typing(f'Tonight, {self.player.name} will confront '
+                        f'{self.opponent.name} in unprecedented cyber dance.\n')
+            sleep(1)
+            delayed_typing('LET THE SHOOOOOOOW BEGIIIIIIIINNN !!!!', 0.08)
+            sleep(2)
+        except KeyboardInterrupt:
+            pass
         clear_console()
-
 
 class RoundRunner:
     """Helper class to call correct turn (player vs opponent)."""
@@ -159,15 +161,32 @@ class PlayersTurn(Turn):
                 if self.attack(action, self.player, self.opponent):
                     break
 
-    def _display_options(self) -> None:
+    def _display_options(self) -> None:     # TODO - health, energy bars, weapons list
         """Print playable options."""
-        print(f'\nYour weapons: {self.player.weapons}')
-        print('You have following options:\n',
-              ' - type the weapon name to use it',
-              ' - type "stats" for robots current stats',
+        print(self._get_bars(self.player),
+              self._get_bars(self.opponent),
+              f'Your weapons: {self.player.weapons}',
               sep='\n')
+        # print('You have following options:\n',
+        #     ' - type the weapon name to use it',
+        #     ' - type "stats" for robots current stats',
+        #     sep='\n')
+        
+    # def _status_bars(self):
+    #     enemy_bars = self._get_bars(self.opponent)
+    #     player_bars = self._get_bars(self.player)
+        
 
-
+    def _get_bars(self, robot: Robot) -> str:
+        max_health = robot._init_data['health']
+        current_health = robot.health
+        max_energy = robot._init_data['energy']
+        current_energy = robot.energy
+        assert isinstance(max_health, int) and isinstance(max_energy, int)
+        health_bar = f'[{"#" * current_health}{"-" * (max_health-current_health)}]'
+        energy_bar = f'[{"#" * current_energy}{"-" * (max_energy-current_energy)}]'
+        return f'{robot.name} HP-{health_bar:<35} \t EN-{energy_bar}'
+        
 class OpponentsTurn(Turn):
     def execute(self) -> None:
         """Pick a random weapon from arsenal and execute attack."""
