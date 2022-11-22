@@ -4,7 +4,7 @@ from time import sleep
 
 from src.robots import Robot, Weapons
 from src.users import User
-from src.utils import clear_console, delayed_typing
+from src.utils import FightRecorder, clear_console, drama_print, safe_get
 
 
 class Fight:
@@ -13,7 +13,7 @@ class Fight:
             self,
             player: Robot,
             opponent: Robot,
-            round_runner: 'RoundRunner'
+            round_runner: 'RoundRunner',
             ):
 
         self.player = player
@@ -42,7 +42,7 @@ class Fight:
             if f_or_f == 'fight':
                 return True
 
-    def has_winner(self) -> bool:
+    def has_winner(self, recorder: FightRecorder) -> bool:
         """
         Loop round_runner until the end of fight.
 
@@ -56,6 +56,7 @@ class Fight:
             if self.player.is_exhausted() and self.opponent.is_exhausted():
                 return False
             self.round_runner.start_round(round_count,
+                                          recorder,
                                           self.player,
                                           self.opponent)
             round_count += 1
@@ -64,21 +65,22 @@ class Fight:
         """Print welcome sequence before the fight."""
         clear_console()
         try:
-            delayed_typing('LAAAAADIEEEES AND GENTLEMEEEEEN...')
+            drama_print('LAAAAADIEEEES AND GENTLEMEEEEEN...')
             sleep(0.5)
-            delayed_typing('Welcome, to THE CYBER PIT!\n')
+            drama_print('Welcome, to THE CYBER PIT!\n')
             sleep(0.2)
-            delayed_typing('A place where metal meets metal in '
+            drama_print('A place where metal meets metal in '
                         'THE MOST SPECTACULAR ROOBOOOT FIIIGTHS!')
             sleep(0.5)
-            delayed_typing(f'Tonight, {self.player.name} will confront '
+            drama_print(f'Tonight, {self.player.name} will confront '
                         f'{self.opponent.name} in unprecedented cyber dance.\n')
             sleep(1)
-            delayed_typing('LET THE SHOOOOOOOW BEGIIIIIIIINNN !!!!', 0.08)
+            drama_print('LET THE SHOOOOOOOW BEGIIIIIIIINNN !!!!', 0.08)
             sleep(2)
         except KeyboardInterrupt:
             pass
         clear_console()
+
 
 class RoundRunner:
     """Helper class to call correct turn (player vs opponent)."""
@@ -87,20 +89,20 @@ class RoundRunner:
         """Execute turn based on Turn instance passed as argument."""
         turn.execute()
 
-    def start_round(self, count: int, player: Robot, opponent: Robot) -> None:
+    def start_round(self, count: int, recorder: FightRecorder, player: Robot, opponent: Robot) -> None:
         """Execute Players and Opponents turn within one round."""
-        print(f'-------- ROUND {count} --------')
-        self.start_turn(PlayersTurn(player, opponent))
-        self.start_turn(OpponentsTurn(player, opponent))
-        print('------------------------------------')
+        recorder.record_event(f'-------- ROUND {count} --------', 0)
+        self.start_turn(PlayersTurn(player, opponent, recorder))
+        self.start_turn(OpponentsTurn(player, opponent, recorder))
 
 
 class Turn(ABC):
     """Abstract class for turn."""
 
-    def __init__(self, player: Robot, opponent: Robot) -> None:
+    def __init__(self, player: Robot, opponent: Robot, recorder: FightRecorder) -> None:
         self.player = player
         self.opponent = opponent
+        self.recorder = recorder
 
     @abstractmethod
     def execute(self) -> None:
@@ -115,7 +117,7 @@ class Turn(ABC):
         Also return False if health is below or equal to 0.
         """
         if robot.is_exhausted():
-            delayed_typing(f' -> {robot.name} is out of energy.')
+            self.recorder.record_event(f' -> {robot.name} is out of energy.')
             return False
         if robot.health <= 0:
             return False
@@ -130,18 +132,18 @@ class Turn(ABC):
         """
         weapon_energy = attacking.use_weapon(weapon)
         if weapon_energy == -1:
-            delayed_typing('  -> not enough energy...')
+            drama_print('  -> not enough energy...')
             return False
-        delayed_typing(f' -> {attacking.name} loading {weapon} ...')
+        self.recorder.record_event(f' -> {attacking.name} loading {weapon} ...')
         sleep(1)
         if not weapon_energy:
-            delayed_typing(f'  -> {attacking.name} missed !!!')
+            self.recorder.record_event(f'  -> {attacking.name} missed !!!')
             return True
         hit = attacked.take_damage(weapon_energy)
         if not hit:
-            delayed_typing(f'  -> {attacked.name} dodged !!!')
+            self.recorder.record_event(f'  -> {attacked.name} dodged !!!')
             return True
-        delayed_typing(f'  -> {attacked.name} took {weapon_energy} '
+        self.recorder.record_event(f'  -> {attacked.name} took {weapon_energy} '
                        'points of damage !!!')
         return True
 
@@ -151,42 +153,57 @@ class PlayersTurn(Turn):
         """Display options for players turn and evaluates input."""
         if not self.status_check(self.player):
             return
-        self._display_options()
+        clear_console()
+        print(self._get_banner(),
+              self.recorder.get_records(),
+              sep='\n')
         while True:
-            action = input('What will it be? ').lower()
-            if action == 'stats':
-                print(self.player)
-                print(self.opponent)
+            action = input('Choose your weapon: ').lower()
             if action in self.player.weapons:
                 if self.attack(action, self.player, self.opponent):
                     break
 
-    def _display_options(self) -> None:     # TODO - health, energy bars, weapons list
-        """Print playable options."""
-        print(self._get_bars(self.player),
-              self._get_bars(self.opponent),
-              f'Your weapons: {self.player.weapons}',
-              sep='\n')
-        # print('You have following options:\n',
-        #     ' - type the weapon name to use it',
-        #     ' - type "stats" for robots current stats',
-        #     sep='\n')
-        
-    # def _status_bars(self):
-    #     enemy_bars = self._get_bars(self.opponent)
-    #     player_bars = self._get_bars(self.player)
-        
+    def _get_banner(self) -> str:
+        """Return a banner with names, energy and health bars, weapons."""
+        pad: int = max(self.player.get_init_energy(),
+                        self.player.get_init_health(),
+                        self.opponent.get_init_energy(),
+                        self.opponent.get_init_health()) +9
+        return (f'|{self.player.name:^{pad}}'
+                f'{self.opponent.name:^{pad}}|\n'
+                f'|{" "*(2*pad)}|\n'
+                f'|{self._get_health_bar(self.player):^{pad}}'
+                f'{self._get_health_bar(self.opponent):^{pad}}|\n'
+                f'|{self._get_energy_bar(self.player):^{pad}}'
+                f'{self._get_energy_bar(self.opponent):^{pad}}|\n'
+                f'{self._get_weapons(pad)}'
+                f'|{"_" * pad * 2}|\n')
 
-    def _get_bars(self, robot: Robot) -> str:
-        max_health = robot._init_data['health']
+    def _get_health_bar(self, robot: Robot) -> str:
+        """Return health bar for specific robot formatted for banner."""
+        max_health = robot.get_init_health()
         current_health = robot.health
-        max_energy = robot._init_data['energy']
+        return f'HP-[{"#" * current_health}{"-" * (max_health-current_health)}]'
+
+    def _get_energy_bar(self, robot: Robot) -> str:
+        """Return energy bar for specific robot formatted for banner."""
+        max_energy = robot.get_init_energy()
         current_energy = robot.energy
-        assert isinstance(max_health, int) and isinstance(max_energy, int)
-        health_bar = f'[{"#" * current_health}{"-" * (max_health-current_health)}]'
-        energy_bar = f'[{"#" * current_energy}{"-" * (max_energy-current_energy)}]'
-        return f'{robot.name} HP-{health_bar:<35} \t EN-{energy_bar}'
-        
+        return f'EN-[{"#" * current_energy}{"-" * (max_energy-current_energy)}]'
+
+    def _get_weapons(self, pad: int) -> str:
+        """Return weapons list formatted for banner."""
+        output = ''
+        for idx in range(max(len(self.player.weapons), len(self.opponent.weapons))):
+            weapon_p = safe_get(self.player.weapons, idx)
+            content_p = f'{weapon_p}  -  {Weapons.get_energy(weapon_p)}'
+            weapon_o = safe_get(self.opponent.weapons, idx)
+            content_o = f'{weapon_o}  -  {Weapons.get_energy(weapon_o)}'
+            output += (f'|{content_p:^{pad}}'
+                       f'{content_o:^{pad}}|\n')
+        return output
+
+
 class OpponentsTurn(Turn):
     def execute(self) -> None:
         """Pick a random weapon from arsenal and execute attack."""
@@ -207,21 +224,22 @@ class OutcomeEval:
 
     def announce_winner(self, user: User) -> None:
         """Evaluate, announce the winner and pays the player if won. """
-        delayed_typing('Aaaand the winner iiiiiiis.....')
+        print('--------------------------------')
+        drama_print('Aaaand the winner iiiiiiis.....')
         sleep(.5)
         if self.player_won():
-            delayed_typing(f'\n  === {self.player.name.upper()} ===\n')
+            drama_print(f'\n  === {self.player.name.upper()} ===\n')
             user.get_btc(int((self.opponent.cost / 10) * 2))
         else:
-            delayed_typing(f'\n  === {self.opponent.name.upper()} ===')
+            drama_print(f'\n  === {self.opponent.name.upper()} ===')
         sleep(1)
 
     def exhausted_outcome(self) -> None:
         """Sequence when both bots are out of energy."""
-        delayed_typing('Oh no! Both bots are out of energy '
+        drama_print('Oh no! Both bots are out of energy '
                        'and are unable to continue.')
         sleep(1)
-        delayed_typing('We have to call it a draw... '
+        drama_print('We have to call it a draw... '
                        'Next time, keep an eye on that battery folks!')
 
     def player_won(self) -> bool:
@@ -235,7 +253,7 @@ def run(user: User, opponent_robot: Robot) -> None:
     """Main function to run the pit."""
     fight = Fight(user.robot, opponent_robot, RoundRunner())
     outcome = OutcomeEval(user.robot, opponent_robot)
-    if (accepted := fight.accepted()) and fight.has_winner():
+    if (accepted := fight.accepted()) and fight.has_winner(FightRecorder()):
         outcome.announce_winner(user)
     elif accepted:
         outcome.exhausted_outcome()

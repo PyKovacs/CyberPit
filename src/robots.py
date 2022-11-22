@@ -84,6 +84,24 @@ class Robot(RobotBase):
             output += f'| {param.capitalize():<17}{value:>8} |\n'
         output += "|" + 27*'_' + "|" + '\n'
         return output
+    
+    def get_init_energy(self) -> int:
+        """
+        Return max energy.
+        Helper method for typing purposes.
+        """
+        value = self._init_data.get('energy', '')
+        assert isinstance(value, int), 'Internal error with robot init values.'
+        return value
+
+    def get_init_health(self) -> int:
+        """
+        Return max health.
+        Helper method for typing purposes.
+        """
+        value = self._init_data.get('health', '')
+        assert isinstance(value, int), 'Internal error with robot init values.'
+        return value
 
     def take_damage(self, damage: int) -> bool:
         """

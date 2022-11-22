@@ -1,6 +1,7 @@
 import os
+from dataclasses import dataclass
 from time import sleep
-from typing import Tuple
+from typing import Any, List, Tuple
 
 THEME_TITLE: Tuple = (
 '##########################################################\n',
@@ -31,13 +32,13 @@ def clear_console() -> None:
     elif os.name == 'nt':
         os.system('cls')
 
-def delayed_typing(text: str, sleep_interval: float = 0.05) -> None:
+def drama_print(text: str, delay: float = 0.05) -> None:
     """Print the text with sleep between characters."""
     for char in text:
         print(char, end="", flush=True)
-        sleep(sleep_interval)
+        sleep(delay)
     print()
-
+  
 def theme() -> None:
     """Theme show at the beginning of the game."""
     clear_console()
@@ -55,3 +56,27 @@ def theme() -> None:
     except KeyboardInterrupt:
         pass
     clear_console()
+
+def safe_get(lst: List, idx: int, default: Any = '') -> Any:
+    """
+    Similar to dict .get func, return item from list,
+    or default value if index error is raised.
+    """
+    try:
+        return lst[idx]
+    except IndexError:
+        return default
+
+
+@dataclass
+class FightRecorder:
+    records: str = ''
+
+    def record_event(self, text: str, delay: float = 0.05) -> None:
+        """Print the text with delayed typing and record the text."""
+        self.records += text + '\n'
+        drama_print(text, delay)
+
+    def get_records(self) -> str:
+        """Display all the records from recorder."""
+        return self.records
