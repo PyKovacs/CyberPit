@@ -3,3 +3,4 @@ data/main.db
 .mypy_cache
 .vscode
 .pytest_cache
+.venv
