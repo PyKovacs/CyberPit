@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from getpass import getpass
 from time import sleep
-from typing import Dict
+from typing import Dict, Optional
 
 import bcrypt  # type: ignore
 
@@ -14,7 +14,7 @@ from src.utils import clear_console
 class User:
     name: str
     db_handle: DBHandler
-    robot: Robot = RobotManager().blank_build
+    robot: Optional[Robot]
     balance: int = 0
 
     @staticmethod
@@ -180,7 +180,7 @@ class UserManager:
 
         password = self.pwd_manager.get_password()
         self.db_handle.create_user(username, password)
-        user = User(username, self.db_handle)
+        user = User(username, self.db_handle, None)
         self.new_user_procedure(user)
         return user
 
@@ -217,4 +217,9 @@ class UserManager:
         print('You were granted 300 bitcoins for a start, use them wisely!\n')
         user.set_balance(300, show=False)
         sleep(2)
-        user.buy_robot(RobotShop(self.robot_manager, user.get_balance_int()))
+        while not user.robot:
+            user.buy_robot(RobotShop(self.robot_manager, user.get_balance_int()))
+            if not user.robot:
+                clear_console()
+                print('You have to buy your first robot!')
+                sleep(3)

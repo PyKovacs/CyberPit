@@ -221,7 +221,7 @@ class RobotShop:
         """Print the message when entering shop."""
         clear_console()
         print('*** WELCOME TO TO ROBOT SHOP ***',
-              'Please, have a look on the finest selection.',
+              'Please, have a look at the finest selection.',
               f'Your balance: {balance} BTC\n',
               self.robot_manager.showcase(),
               'Select a robot you wish to buy.',
