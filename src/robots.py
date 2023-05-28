@@ -11,19 +11,6 @@ from typing import Dict, List, Optional, Tuple, Union
 from src.utils import clear_console
 
 PATH_TO_BUILDS = 'data/builds.json'
-BLANK_BUILD: Dict[str, Union[str, int, List[str]]]
-BLANK_BUILD = {
-        "name": "",
-        "build": "",
-        "desc": "",
-        "weapons": [],
-        "health": 0,
-        "energy": 0,
-        "dodge_chance": 0,
-        "miss_chance": 0,
-        "cost": 0
-}
-
 
 class Weapons(Enum):
     SPIKE = 2
@@ -153,7 +140,6 @@ class RobotManager:
         with open(PATH_TO_BUILDS, 'r') as builds_file:
             self.builds: Dict[str, Dict[str, Union[str, int, List[str]]]]
             self.builds = json.load(builds_file)
-        self.blank_build = Robot("", BLANK_BUILD)
 
     def get_all_build_names(self) -> Tuple[str,...]:
         """Return Dict of all robot builds with attributes."""
